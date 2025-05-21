@@ -1,0 +1,131 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Welcome, <%= current_user.email %></h1>
+    <p class="text-gray-600"><%= current_user.role&.titleize || 'User' %> Dashboard</p>
+  </div>
+
+  <% if current_user.role.present? %>
+    <% case current_user.role %>
+    <% when 'student' %>
+      <!-- Student Dashboard -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-2">Attendance Overview</h3>
+          <div class="space-y-2">
+            <p>Total Classes: <%= @attendance_stats[:total_classes] %></p>
+            <p>Present Classes: <%= @attendance_stats[:present_classes] %></p>
+            <p>Attendance Rate: <%= @attendance_stats[:attendance_percentage] %>%</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-2">Quick Actions</h3>
+          <div class="space-y-2">
+            <%= link_to 'View My Attendance', my_attendance_attendances_path, class: 'block text-blue-600 hover:text-blue-800' %>
+            <%= link_to 'View Attendance Records', student_attendance_index_path, class: 'block text-blue-600 hover:text-blue-800' %>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-2">Recent Attendance</h3>
+          <% if @recent_attendances.any? %>
+            <div class="space-y-2">
+              <% @recent_attendances.each do |attendance| %>
+                <div class="flex justify-between items-center">
+                  <span><%= attendance.created_at.strftime("%B %d, %Y") %></span>
+                  <span class="<%= attendance.status == 'present' ? 'text-green-600' : 'text-red-600' %>">
+                    <%= attendance.status.titleize %>
+                  </span>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-gray-500">No recent attendance records</p>
+          <% end %>
+        </div>
+      </div>
+
+    <% when 'teacher' %>
+      <!-- Teacher Dashboard -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-2">Class Statistics</h3>
+          <div class="space-y-2">
+            <p>Total Classes: <%= @class_stats[:total_classes] %></p>
+            <p>Total Students: <%= @class_stats[:total_students] %></p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-2">Quick Actions</h3>
+          <div class="space-y-2">
+            <%= link_to 'Mark Attendance', new_teacher_class_attendance_path, class: 'block text-blue-600 hover:text-blue-800' %>
+            <%= link_to 'View Class Records', class_records_attendances_path, class: 'block text-blue-600 hover:text-blue-800' %>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-2">Recent Classes</h3>
+          <% if @recent_classes.any? %>
+            <div class="space-y-2">
+              <% @recent_classes.each do |class_record| %>
+                <div class="flex justify-between items-center">
+                  <span><%= class_record.created_at.strftime("%B %d, %Y") %></span>
+                  <span class="text-gray-600">
+                    <%= class_record.student.email %>
+                  </span>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-gray-500">No recent class records</p>
+          <% end %>
+        </div>
+      </div>
+
+    <% when 'admin' %>
+      <!-- Admin Dashboard -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-2">System Overview</h3>
+          <div class="space-y-2">
+            <p>Total Students: <%= @total_students %></p>
+            <p>Total Teachers: <%= @total_teachers %></p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-2">Quick Actions</h3>
+          <div class="space-y-2">
+            <%= link_to 'Manage Users', admin_users_path, class: 'block text-blue-600 hover:text-blue-800' %>
+            <%= link_to 'View Reports', admin_reports_path, class: 'block text-blue-600 hover:text-blue-800' %>
+            <%= link_to 'Export Data', export_admin_reports_path, class: 'block text-blue-600 hover:text-blue-800' %>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-2">Recent Activities</h3>
+          <% if @recent_activities.any? %>
+            <div class="space-y-2">
+              <% @recent_activities.each do |activity| %>
+                <div class="flex justify-between items-center">
+                  <span><%= activity.created_at.strftime("%B %d, %Y") %></span>
+                  <span class="text-gray-600">
+                    <%= activity.student.email %> - <%= activity.status.titleize %>
+                  </span>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-gray-500">No recent activities</p>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+      <p class="font-bold">Role Not Set</p>
+      <p>Your user role has not been set. Please contact the administrator to set your role.</p>
+    </div>
+  <% end %>
+</div>

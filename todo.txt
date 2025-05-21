@@ -1,0 +1,4 @@
+1. Check the routes 
+2. Make the student and teacher form separate. Teacher missing mail field
+3. Class form is also not working
+

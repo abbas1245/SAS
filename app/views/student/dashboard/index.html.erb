@@ -1,0 +1,142 @@
+<div class="min-h-screen bg-gray-100">
+  <div class="py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 class="text-2xl font-semibold text-gray-900">Student Dashboard</h1>
+      <p class="mt-1 text-sm text-gray-600">Welcome, <%= @student.full_name %></p>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+      <!-- Stats -->
+      <div class="mt-8">
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Attendance Overview -->
+          <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-medium text-gray-500 truncate">Attendance Overview</dt>
+                    <dd class="mt-1">
+                      <div class="text-sm text-gray-900">
+                        <p>Total Classes: <%= @attendance_stats[:total_classes] %></p>
+                        <p>Present Classes: <%= @attendance_stats[:present_classes] %></p>
+                        <p>Attendance Rate: <%= @attendance_stats[:attendance_percentage] %>%</p>
+                        <% if @attendance_stats[:short_attendance] %>
+                          <p class="text-red-600 font-medium">Short Attendance Warning</p>
+                        <% end %>
+                      </div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+            <div class="bg-gray-50 px-5 py-3">
+              <%= link_to report_student_attendance_index_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-500" do %>
+                View detailed report
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Class Information -->
+          <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-medium text-gray-500 truncate">Class Information</dt>
+                    <dd class="mt-1">
+                      <div class="text-sm text-gray-900">
+                        <p>Class: <%= @student.class_standard&.display_name || 'Not Assigned' %></p>
+                        <p>Roll Number: <%= @student.roll_number %></p>
+                      </div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-medium text-gray-500 truncate">Quick Actions</dt>
+                    <dd class="mt-1">
+                      <div class="space-y-2">
+                        <%= link_to 'View My Attendance', student_attendance_index_path, class: 'block text-sm text-indigo-600 hover:text-indigo-500' %>
+                        <%= link_to 'Download Report', report_student_attendance_index_path(format: :pdf), class: 'block text-sm text-indigo-600 hover:text-indigo-500' %>
+                      </div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activities -->
+      <div class="mt-8">
+        <div class="bg-white shadow rounded-lg">
+          <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Recent Attendance</h3>
+          </div>
+          <div class="border-t border-gray-200">
+            <div class="bg-white shadow overflow-hidden sm:rounded-md">
+              <ul role="list" class="divide-y divide-gray-200">
+                <% if @recent_attendances.any? %>
+                  <% @recent_attendances.each do |attendance| %>
+                    <li>
+                      <div class="px-4 py-4 sm:px-6">
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center">
+                            <p class="text-sm font-medium text-gray-900">
+                              <%= attendance.date.strftime("%B %d, %Y") %>
+                            </p>
+                            <p class="ml-2 flex-shrink-0 flex">
+                              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                <%= attendance.status == 'present' ? 'bg-green-100 text-green-800' : 
+                                    attendance.status == 'absent' ? 'bg-red-100 text-red-800' : 
+                                    'bg-yellow-100 text-yellow-800' %>">
+                                <%= attendance.status.titleize %>
+                              </span>
+                            </p>
+                          </div>
+                          <div class="ml-2 flex-shrink-0 flex">
+                            <p class="text-sm text-gray-500">
+                              Marked by <%= attendance.teacher.full_name %>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  <% end %>
+                <% else %>
+                  <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                    No recent attendance records
+                  </li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

@@ -1,0 +1,160 @@
+<div class="min-h-screen bg-gray-100">
+  <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <!-- Class Selection -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Mark Attendance</h2>
+      <div class="mb-4">
+        <label for="class_standard" class="block text-sm font-medium text-gray-700">Select Class</label>
+        <select id="class_standard" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+          <option value="">Select a class</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Attendance Form -->
+    <div id="attendance-form" class="bg-white shadow rounded-lg p-6 hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-gray-900" id="class-name"></h3>
+        <div class="text-sm text-gray-500" id="date-display"></div>
+      </div>
+
+      <form id="mark-attendance-form">
+        <div class="space-y-4" id="students-list">
+          <!-- Students will be loaded here -->
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+          <button type="button" id="reset-btn" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Reset
+          </button>
+          <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Save Attendance
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<% content_for :javascript do %>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const classSelect = document.getElementById('class_standard');
+      const attendanceForm = document.getElementById('attendance-form');
+      const className = document.getElementById('class-name');
+      const dateDisplay = document.getElementById('date-display');
+      const studentsList = document.getElementById('students-list');
+      const resetBtn = document.getElementById('reset-btn');
+      const markAttendanceForm = document.getElementById('mark-attendance-form');
+
+      // Set today's date
+      dateDisplay.textContent = new Date().toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+
+      // Load class standards
+      fetch('/teacher/attendance/class_standards')
+        .then(response => response.json())
+        .then(classes => {
+          classes.forEach(cs => {
+            const option = document.createElement('option');
+            option.value = cs.id;
+            option.textContent = cs.name;
+            classSelect.appendChild(option);
+          });
+        });
+
+      // Handle class selection
+      classSelect.addEventListener('change', function() {
+        if (this.value) {
+          fetch(`/teacher/attendance/students?class_standard_id=${this.value}`)
+            .then(response => response.json())
+            .then(students => {
+              className.textContent = this.options[this.selectedIndex].text;
+              studentsList.innerHTML = '';
+              
+              students.forEach(student => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+                div.innerHTML = `
+                  <div class="flex items-center">
+                    <span class="text-sm font-medium text-gray-900">${student.name}</span>
+                  </div>
+                  <div class="flex items-center space-x-4">
+                    <label class="inline-flex items-center">
+                      <input type="radio" name="attendance[${student.id}]" value="present" 
+                        class="form-radio h-4 w-4 text-indigo-600" 
+                        ${student.attendance === 'present' ? 'checked' : ''}>
+                      <span class="ml-2 text-sm text-gray-700">Present</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                      <input type="radio" name="attendance[${student.id}]" value="absent"
+                        class="form-radio h-4 w-4 text-indigo-600"
+                        ${student.attendance === 'absent' ? 'checked' : ''}>
+                      <span class="ml-2 text-sm text-gray-700">Absent</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                      <input type="radio" name="attendance[${student.id}]" value="late"
+                        class="form-radio h-4 w-4 text-indigo-600"
+                        ${student.attendance === 'late' ? 'checked' : ''}>
+                      <span class="ml-2 text-sm text-gray-700">Late</span>
+                    </label>
+                  </div>
+                `;
+                studentsList.appendChild(div);
+              });
+              
+              attendanceForm.classList.remove('hidden');
+            });
+        } else {
+          attendanceForm.classList.add('hidden');
+        }
+      });
+
+      // Handle form submission
+      markAttendanceForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const attendance = {};
+        
+        for (let [key, value] of formData.entries()) {
+          if (key.startsWith('attendance[')) {
+            const studentId = key.match(/\[(\d+)\]/)[1];
+            attendance[studentId] = value;
+          }
+        }
+
+        fetch(`/teacher/attendance/mark?class_standard_id=${classSelect.value}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: JSON.stringify({ attendance: attendance })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            alert(data.error);
+          } else {
+            alert('Attendance marked successfully!');
+            window.location.reload();
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('An error occurred while saving attendance.');
+        });
+      });
+
+      // Handle reset
+      resetBtn.addEventListener('click', function() {
+        const radioButtons = studentsList.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach(radio => radio.checked = false);
+      });
+    });
+  </script>
+<% end %> 
