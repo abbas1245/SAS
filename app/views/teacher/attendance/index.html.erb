@@ -1,160 +1,324 @@
-<div class="min-h-screen bg-gray-100">
-  <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <!-- Class Selection -->
-    <div class="bg-white shadow rounded-lg p-6 mb-6">
-      <h2 class="text-2xl font-bold text-gray-900 mb-4">Mark Attendance</h2>
-      <div class="mb-4">
-        <label for="class_standard" class="block text-sm font-medium text-gray-700">Select Class</label>
-        <select id="class_standard" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-          <option value="">Select a class</option>
-        </select>
-      </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-2xl font-semibold text-gray-900">Attendance Dashboard</h1>
+      <p class="mt-2 text-sm text-gray-700">
+        Mark attendance for your assigned classes.
+      </p>
     </div>
-
-    <!-- Attendance Form -->
-    <div id="attendance-form" class="bg-white shadow rounded-lg p-6 hidden">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-semibold text-gray-900" id="class-name"></h3>
-        <div class="text-sm text-gray-500" id="date-display"></div>
-      </div>
-
-      <form id="mark-attendance-form">
-        <div class="space-y-4" id="students-list">
-          <!-- Students will be loaded here -->
-        </div>
-
-        <div class="mt-6 flex justify-end space-x-3">
-          <button type="button" id="reset-btn" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Reset
-          </button>
-          <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Save Attendance
-          </button>
-        </div>
-      </form>
+    <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+      <span class="inline-flex items-center rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-800">
+        <svg class="h-5 w-5 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <%= Date.current.strftime("%A, %B %d, %Y") %>
+      </span>
     </div>
   </div>
+
+  <!-- Class Selection Form -->
+  <div class="mt-4 bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+      <h3 class="text-lg leading-6 font-medium text-gray-900">Select Class</h3>
+    </div>
+    <div class="px-4 py-5 sm:p-6">
+      <%= form_with(url: teacher_attendance_index_path, method: :get, data: { turbo: false }) do |f| %>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <div class="max-w-lg">
+              <%= f.select :class_standard_id, 
+                  options_from_collection_for_select(@class_standards, :id, :display_name, params[:class_standard_id]),
+                  { include_blank: "-- Select a class to mark attendance --" },
+                  { class: "mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md", onchange: "this.form.submit()" }
+              %>
+            </div>
+          </div>
+          <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+            <% if @class_standards.empty? %>
+              <div class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-amber-800 bg-amber-100">
+                <svg class="h-5 w-5 mr-1.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                No classes assigned. Contact administrator.
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @selected_class && @students.present? %>
+    <!-- Students Attendance Form -->
+    <div class="mt-8 bg-white shadow rounded-lg">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
+        <div>
+          <h3 class="text-lg leading-6 font-medium text-gray-900">
+            <%= @selected_class.display_name %> - Mark Attendance
+          </h3>
+          <p class="mt-1 text-sm text-gray-500">
+            <%= @students.count %> students enrolled
+          </p>
+        </div>
+        <div class="flex space-x-2">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            Present: <span id="present-count" class="ml-1 font-bold">0</span>
+          </span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+            Absent: <span id="absent-count" class="ml-1 font-bold">0</span>
+          </span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+            Late: <span id="late-count" class="ml-1 font-bold">0</span>
+          </span>
+        </div>
+      </div>
+      <div class="px-4 py-5 sm:p-6">
+        <%= form_with(url: mark_teacher_attendance_index_path(class_standard_id: @selected_class.id), method: :post, id: "attendance-form", data: { turbo: true }) do |form| %>
+          <div class="mt-8 flex flex-col">
+            <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                  <table class="min-w-full divide-y divide-gray-300">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">#</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Student Name</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Roll Number</th>
+                        <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">Attendance Status</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 bg-white">
+                      <% @students.each_with_index do |student, index| %>
+                        <% 
+                          current_attendance = @today_attendance[student.id]&.status 
+                          present_checked = current_attendance == 'present' ? 'checked' : ''
+                          absent_checked = current_attendance == 'absent' ? 'checked' : ''
+                          late_checked = current_attendance == 'late' ? 'checked' : ''
+                        %>
+                        <tr>
+                          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                            <%= index + 1 %>
+                          </td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm">
+                            <div class="flex items-center">
+                              <div class="h-8 w-8 flex-shrink-0 bg-indigo-600 rounded-full text-white flex items-center justify-center font-semibold mr-3">
+                                <%= student.first_name[0] %><%= student.last_name[0] %>
+                              </div>
+                              <div class="font-medium text-gray-900">
+                                <%= student.full_name %>
+                              </div>
+                            </div>
+                          </td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              <%= student.roll_number || "Not Set" %>
+                            </span>
+                          </td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            <div class="flex justify-center" data-student-id="<%= student.id %>">
+                              <div class="inline-flex rounded-md shadow-sm" role="group">
+                                <div class="relative flex">
+                                  <input type="radio" id="present-<%= student.id %>" name="attendance[<%= student.id %>]" value="present" <%= present_checked %> class="attendance-radio sr-only">
+                                  <label for="present-<%= student.id %>" class="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-l-md border border-gray-300 bg-white hover:bg-gray-50 focus:z-10 focus:ring-1 focus:ring-indigo-500 <%= present_checked == 'checked' ? 'bg-green-100 text-green-800 border-green-500' : 'text-gray-700' %>">
+                                    <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Present
+                                  </label>
+                                </div>
+                                
+                                <div class="relative flex">
+                                  <input type="radio" id="absent-<%= student.id %>" name="attendance[<%= student.id %>]" value="absent" <%= absent_checked %> class="attendance-radio sr-only">
+                                  <label for="absent-<%= student.id %>" class="relative inline-flex items-center px-4 py-2 text-sm font-medium border-t border-b border-gray-300 bg-white hover:bg-gray-50 focus:z-10 focus:ring-1 focus:ring-indigo-500 <%= absent_checked == 'checked' ? 'bg-red-100 text-red-800 border-red-500' : 'text-gray-700' %>">
+                                    <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Absent
+                                  </label>
+                                </div>
+                                
+                                <div class="relative flex">
+                                  <input type="radio" id="late-<%= student.id %>" name="attendance[<%= student.id %>]" value="late" <%= late_checked %> class="attendance-radio sr-only">
+                                  <label for="late-<%= student.id %>" class="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-r-md border border-gray-300 bg-white hover:bg-gray-50 focus:z-10 focus:ring-1 focus:ring-indigo-500 <%= late_checked == 'checked' ? 'bg-yellow-100 text-yellow-800 border-yellow-500' : 'text-gray-700' %>">
+                                    <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Late
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6 flex justify-between">
+            <div class="flex space-x-3">
+              <button type="button" id="mark-all-present" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Mark All Present
+              </button>
+              <button type="button" id="reset-attendance" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reset
+              </button>
+            </div>
+            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+              Save Attendance
+            </button>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% elsif params[:class_standard_id].present? && @students.blank? %>
+    <!-- No Students Alert -->
+    <div class="mt-8 rounded-md bg-blue-50 p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="ml-3 flex-1 md:flex md:justify-between">
+          <p class="text-sm text-blue-700">
+            No students are enrolled in this class. Please contact an administrator to add students.
+          </p>
+        </div>
+      </div>
+    </div>
+  <% elsif !params[:class_standard_id].present? && @class_standards.any? %>
+    <!-- Instructions Card -->
+    <div class="mt-8 bg-white shadow sm:rounded-lg">
+      <div class="px-4 py-5 sm:p-6 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No class selected</h3>
+        <p class="mt-1 text-sm text-gray-500">
+          Please select a class from the dropdown above to mark attendance.
+        </p>
+      </div>
+    </div>
+  <% end %>
 </div>
 
-<% content_for :javascript do %>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const classSelect = document.getElementById('class_standard');
-      const attendanceForm = document.getElementById('attendance-form');
-      const className = document.getElementById('class-name');
-      const dateDisplay = document.getElementById('date-display');
-      const studentsList = document.getElementById('students-list');
-      const resetBtn = document.getElementById('reset-btn');
-      const markAttendanceForm = document.getElementById('mark-attendance-form');
-
-      // Set today's date
-      dateDisplay.textContent = new Date().toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-
-      // Load class standards
-      fetch('/teacher/attendance/class_standards')
-        .then(response => response.json())
-        .then(classes => {
-          classes.forEach(cs => {
-            const option = document.createElement('option');
-            option.value = cs.id;
-            option.textContent = cs.name;
-            classSelect.appendChild(option);
-          });
-        });
-
-      // Handle class selection
-      classSelect.addEventListener('change', function() {
-        if (this.value) {
-          fetch(`/teacher/attendance/students?class_standard_id=${this.value}`)
-            .then(response => response.json())
-            .then(students => {
-              className.textContent = this.options[this.selectedIndex].text;
-              studentsList.innerHTML = '';
-              
-              students.forEach(student => {
-                const div = document.createElement('div');
-                div.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
-                div.innerHTML = `
-                  <div class="flex items-center">
-                    <span class="text-sm font-medium text-gray-900">${student.name}</span>
-                  </div>
-                  <div class="flex items-center space-x-4">
-                    <label class="inline-flex items-center">
-                      <input type="radio" name="attendance[${student.id}]" value="present" 
-                        class="form-radio h-4 w-4 text-indigo-600" 
-                        ${student.attendance === 'present' ? 'checked' : ''}>
-                      <span class="ml-2 text-sm text-gray-700">Present</span>
-                    </label>
-                    <label class="inline-flex items-center">
-                      <input type="radio" name="attendance[${student.id}]" value="absent"
-                        class="form-radio h-4 w-4 text-indigo-600"
-                        ${student.attendance === 'absent' ? 'checked' : ''}>
-                      <span class="ml-2 text-sm text-gray-700">Absent</span>
-                    </label>
-                    <label class="inline-flex items-center">
-                      <input type="radio" name="attendance[${student.id}]" value="late"
-                        class="form-radio h-4 w-4 text-indigo-600"
-                        ${student.attendance === 'late' ? 'checked' : ''}>
-                      <span class="ml-2 text-sm text-gray-700">Late</span>
-                    </label>
-                  </div>
-                `;
-                studentsList.appendChild(div);
-              });
-              
-              attendanceForm.classList.remove('hidden');
-            });
-        } else {
-          attendanceForm.classList.add('hidden');
-        }
-      });
-
-      // Handle form submission
-      markAttendanceForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const attendance = {};
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const presentCount = document.getElementById('present-count');
+    const absentCount = document.getElementById('absent-count');
+    const lateCount = document.getElementById('late-count');
+    const attendanceForm = document.getElementById('attendance-form');
+    const markAllPresentBtn = document.getElementById('mark-all-present');
+    const resetAttendanceBtn = document.getElementById('reset-attendance');
+    
+    // Initial count
+    updateAttendanceCounts();
+    
+    // Add event listeners to all attendance radios
+    document.querySelectorAll('.attendance-radio').forEach(radio => {
+      radio.addEventListener('change', function() {
+        updateAttendanceCounts();
         
-        for (let [key, value] of formData.entries()) {
-          if (key.startsWith('attendance[')) {
-            const studentId = key.match(/\[(\d+)\]/)[1];
-            attendance[studentId] = value;
-          }
-        }
-
-        fetch(`/teacher/attendance/mark?class_standard_id=${classSelect.value}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-          },
-          body: JSON.stringify({ attendance: attendance })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.error) {
-            alert(data.error);
-          } else {
-            alert('Attendance marked successfully!');
-            window.location.reload();
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('An error occurred while saving attendance.');
+        // Update label styling
+        const studentId = this.id.split('-')[1];
+        const status = this.value;
+        
+        // Reset all labels for this student
+        document.querySelectorAll(`[for^="present-${studentId}"], [for^="absent-${studentId}"], [for^="late-${studentId}"]`).forEach(label => {
+          label.classList.remove('bg-green-100', 'text-green-800', 'border-green-500', 
+                               'bg-red-100', 'text-red-800', 'border-red-500',
+                               'bg-yellow-100', 'text-yellow-800', 'border-yellow-500');
+          label.classList.add('text-gray-700');
         });
-      });
-
-      // Handle reset
-      resetBtn.addEventListener('click', function() {
-        const radioButtons = studentsList.querySelectorAll('input[type="radio"]');
-        radioButtons.forEach(radio => radio.checked = false);
+        
+        // Set active label style
+        const activeLabel = document.querySelector(`[for="${this.id}"]`);
+        if (status === 'present') {
+          activeLabel.classList.add('bg-green-100', 'text-green-800', 'border-green-500');
+        } else if (status === 'absent') {
+          activeLabel.classList.add('bg-red-100', 'text-red-800', 'border-red-500');
+        } else if (status === 'late') {
+          activeLabel.classList.add('bg-yellow-100', 'text-yellow-800', 'border-yellow-500');
+        }
+        activeLabel.classList.remove('text-gray-700');
       });
     });
-  </script>
-<% end %> 
+    
+    // Mark all present button
+    if (markAllPresentBtn) {
+      markAllPresentBtn.addEventListener('click', function() {
+        document.querySelectorAll('input[value="present"]').forEach(radio => {
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change'));
+        });
+      });
+    }
+    
+    // Reset button
+    if (resetAttendanceBtn) {
+      resetAttendanceBtn.addEventListener('click', function() {
+        document.querySelectorAll('.attendance-radio').forEach(radio => {
+          radio.checked = false;
+        });
+        
+        // Reset all label styling
+        document.querySelectorAll('[for^="present-"], [for^="absent-"], [for^="late-"]').forEach(label => {
+          label.classList.remove('bg-green-100', 'text-green-800', 'border-green-500', 
+                               'bg-red-100', 'text-red-800', 'border-red-500',
+                               'bg-yellow-100', 'text-yellow-800', 'border-yellow-500');
+          label.classList.add('text-gray-700');
+        });
+        
+        updateAttendanceCounts();
+      });
+    }
+    
+    // Attendance form submission
+    if (attendanceForm) {
+      attendanceForm.addEventListener('submit', function(e) {
+        // Check if any students don't have attendance marked
+        const totalStudents = document.querySelectorAll('[data-student-id]').length;
+        const markedStudents = document.querySelectorAll('.attendance-radio:checked').length;
+        
+        if (markedStudents < totalStudents) {
+          e.preventDefault(); // Prevent form submission to show the confirm dialog
+          if (!confirm(`${totalStudents - markedStudents} students don't have attendance marked. Continue anyway?`)) {
+            return;
+          } else {
+            // If user confirms, manually submit the form
+            this.submit();
+          }
+        }
+        
+        // Show loading state for better UX
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...';
+        submitBtn.disabled = true;
+      });
+    }
+    
+    // Update attendance counters
+    function updateAttendanceCounts() {
+      const present = document.querySelectorAll('input[value="present"]:checked').length;
+      const absent = document.querySelectorAll('input[value="absent"]:checked').length;
+      const late = document.querySelectorAll('input[value="late"]:checked').length;
+      
+      presentCount.textContent = present;
+      absentCount.textContent = absent;
+      lateCount.textContent = late;
+    }
+  });
+</script>

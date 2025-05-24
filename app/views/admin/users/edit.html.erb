@@ -39,7 +39,10 @@
           <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
             <div class="flex flex-col">
               <%= f.label :email, class: "block text-sm font-medium text-gray-700" %>
-              <%= f.email_field :email, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", readonly: true %>
+              <%= f.email_field :email, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+              <% if @user.student? %>
+                <p class="mt-1 text-xs text-gray-500">Student's email for login (required)</p>
+              <% end %>
             </div>
 
             <div class="flex flex-col">
@@ -63,9 +66,19 @@
             </div>
 
             <div class="flex flex-col <%= 'hidden' unless @user.student? %>" id="student-fields">
-              <%= f.label :class_standard, "Class", class: "block text-sm font-medium text-gray-700" %>
-              <%= f.select :class_standard, @class_standards, { include_blank: "Select a class" },
-                  class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <%= f.label :class_standard, "Class", class: "block text-sm font-medium text-gray-700" %>
+                  <%= f.select :class_standard, @class_standards, { include_blank: "Select a class" },
+                      class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+                </div>
+                <div>
+                  <%= f.label :roll_number, "Roll Number", class: "block text-sm font-medium text-gray-700" %>
+                  <%= f.text_field :roll_number, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                      placeholder: "e.g. HSS801" %>
+                  <p class="mt-1 text-xs text-gray-500">Format: HSS followed by 3 digits (e.g. HSS801)</p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -96,7 +109,7 @@
           nameFields.classList.remove('hidden');
         } else {
           studentFields.classList.add('hidden');
-          nameFields.classList.add('hidden');
+          nameFields.classList.add('hidden'); 
         }
       }
 

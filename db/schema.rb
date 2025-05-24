@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_21_223001) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_22_082002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_21_223001) do
     t.bigint "teacher_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "class_standard"
+    t.index ["class_standard"], name: "index_attendances_on_class_standard"
     t.index ["student_id"], name: "index_attendances_on_student_id"
     t.index ["teacher_id"], name: "index_attendances_on_teacher_id"
   end

@@ -10,6 +10,17 @@
       <%= link_to 'Add User', new_admin_user_path, class: "inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto" %>
     </div>
   </div>
+  
+  <!-- Role Filter -->
+  <div class="mt-4 bg-white shadow rounded-md p-4">
+    <div class="flex flex-wrap items-center space-x-4">
+      <span class="text-sm font-medium text-gray-700">Filter by role:</span>
+      <%= link_to 'All Users', admin_users_path, class: "px-3 py-1 rounded-full text-sm #{params[:role].blank? ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-800'}" %>
+      <%= link_to 'Admins', admin_users_path(role: 'admin'), class: "px-3 py-1 rounded-full text-sm #{params[:role] == 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}" %>
+      <%= link_to 'Teachers', admin_users_path(role: 'teacher'), class: "px-3 py-1 rounded-full text-sm #{params[:role] == 'teacher' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}" %>
+      <%= link_to 'Students', admin_users_path(role: 'student'), class: "px-3 py-1 rounded-full text-sm #{params[:role] == 'student' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}" %>
+    </div>
+  </div>
 
   <div class="mt-8 flex flex-col">
     <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -40,6 +51,10 @@
                   </td>
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                     <%= link_to 'Edit', edit_admin_user_path(user), class: "text-indigo-600 hover:text-indigo-900" %>
+                    <% if user.teacher? %>
+                      <%= link_to 'Check Classes', check_teacher_classes_admin_class_standard_teacher_assignments_path(class_standard_id: ClassStandard.first&.id || 1, teacher_id: user.id), class: "ml-4 text-blue-600 hover:text-blue-900" %>
+                      <%= link_to 'Assign Class', admin_teacher_assign_class_path(teacher_id: user.id), class: "ml-4 px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700" %>
+                    <% end %>
                     <%= link_to 'Delete', admin_user_path(user), data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, class: "ml-4 text-red-600 hover:text-red-900" %>
                   </td>
                 </tr>

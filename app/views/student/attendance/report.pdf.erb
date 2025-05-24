@@ -1,0 +1,159 @@
+<div class="header">
+  <h1>Student Attendance Report</h1>
+  <p><%= @student.full_name %> | Class: <%= @student.class_standard&.display_name || 'Not Assigned' %> | Roll Number: <%= @student.roll_number %></p>
+</div>
+
+<div class="summary">
+  <div class="summary-card">
+    <h2><%= @total_classes %></h2>
+    <p>Total Classes</p>
+  </div>
+  
+  <div class="summary-card">
+    <h2><%= @present_classes %></h2>
+    <p>Present</p>
+  </div>
+  
+  <div class="summary-card">
+    <h2><%= @absent_classes %></h2>
+    <p>Absent</p>
+  </div>
+  
+  <div class="summary-card">
+    <h2><%= @late_classes %></h2>
+    <p>Late</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <h3>Overall Attendance: <%= number_to_percentage(@attendance_percentage, precision: 1) %></h3>
+  </div>
+  <div class="section-content">
+    <div class="progress-container">
+      <div class="progress-bar <%= @attendance_percentage >= 75 ? 'good' : @attendance_percentage >= 60 ? 'warning' : 'danger' %>" style="width: <%= @attendance_percentage %>%;"></div>
+    </div>
+    <p>
+      <% if @attendance_percentage >= 75 %>
+        Good attendance rate. Keep it up!
+      <% elsif @attendance_percentage >= 60 %>
+        Attendance rate is acceptable but could be improved.
+      <% else %>
+        Attendance rate is concerning. Please make efforts to attend more classes.
+      <% end %>
+    </p>
+  </div>
+</div>
+
+<% if @attendance_by_subject.any? %>
+  <div class="section">
+    <div class="section-header">
+      <h3>Subject-wise Attendance</h3>
+    </div>
+    <div class="section-content">
+      <table>
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Present</th>
+            <th>Total</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @attendance_by_subject.each do |code, data| %>
+            <tr>
+              <td><%= data[:name] %></td>
+              <td><%= data[:present] %></td>
+              <td><%= data[:total] %></td>
+              <td>
+                <div class="progress-container" style="width: 100px; display: inline-block; vertical-align: middle;">
+                  <div class="progress-bar <%= data[:status] == 'good' ? 'good' : 'danger' %>" style="width: <%= data[:percentage] %>%;"></div>
+                </div>
+                <span style="margin-left: 5px;"><%= data[:percentage] %>%</span>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% end %>
+
+<% if @monthly_trend.any? %>
+  <div class="section">
+    <div class="section-header">
+      <h3>Monthly Attendance Trend</h3>
+    </div>
+    <div class="section-content">
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Present</th>
+            <th>Total</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @monthly_trend.sort.each do |month, data| %>
+            <tr>
+              <td><%= month.strftime("%B %Y") %></td>
+              <td><%= data[:present] %></td>
+              <td><%= data[:total] %></td>
+              <td>
+                <div class="progress-container" style="width: 100px; display: inline-block; vertical-align: middle;">
+                  <div class="progress-bar <%= data[:percentage] >= 75 ? 'good' : 'danger' %>" style="width: <%= data[:percentage] %>%;"></div>
+                </div>
+                <span style="margin-left: 5px;"><%= data[:percentage] %>%</span>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% end %>
+
+<div class="section">
+  <div class="section-header">
+    <h3>Recent Attendance Records</h3>
+  </div>
+  <div class="section-content">
+    <% if @attendances.any? %>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Class</th>
+            <th>Status</th>
+            <th>Marked By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @attendances.first(10).each do |attendance| %>
+            <tr>
+              <td><%= attendance.date.strftime("%B %d, %Y") %></td>
+              <td>
+                <% class_obj = ClassStandard.find_by(code: attendance.class_standard) %>
+                <%= class_obj ? class_obj.display_name : attendance.class_standard %>
+              </td>
+              <td>
+                <span class="badge <%= attendance.status || 'not-set' %>">
+                  <%= attendance.status&.titleize || 'Not Set' %>
+                </span>
+              </td>
+              <td><%= attendance.teacher.full_name %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p>No recent attendance records available.</p>
+    <% end %>
+  </div>
+</div>
+
+<div style="text-align: center; margin-top: 20px; font-size: 12px; color: #6b7280;">
+  <p>Generated on <%= Date.current.strftime("%B %d, %Y") %></p>
+</div> 

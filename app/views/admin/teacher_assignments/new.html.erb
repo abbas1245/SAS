@@ -1,0 +1,179 @@
+<div class="container-fluid px-4 bg-gray-900 text-white py-6 rounded-lg">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><%= link_to 'Dashboard', admin_root_path, class: 'text-indigo-300' %></li>
+      <li class="breadcrumb-item"><%= link_to 'Classes', admin_class_standards_path, class: 'text-indigo-300' %></li>
+      <li class="breadcrumb-item"><%= link_to @class_standard.name, admin_class_standard_path(@class_standard), class: 'text-indigo-300' %></li>
+      <li class="breadcrumb-item active text-gray-400" aria-current="page">Assign Teacher</li>
+    </ol>
+  </nav>
+
+  <h2 class="mb-4 fw-bold text-transparent bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text">
+    Assign Teacher to <%= @class_standard.name %>
+  </h2>
+
+  <div class="card shadow-lg mb-4 bg-gray-800 border-0">
+    <div class="card-header bg-gray-800 py-3 border-bottom border-gray-700">
+      <h6 class="m-0 fw-bold text-indigo-400">Teacher Assignment Form</h6>
+    </div>
+    <div class="card-body bg-gray-800">
+      <%= form_with(model: [:admin, @class_standard, @teacher_assignment], local: true, id: "teacherAssignForm") do |form| %>
+        <% if @teacher_assignment.errors.any? %>
+          <div class="alert bg-red-900/50 border-red-600 text-red-200">
+            <div class="d-flex align-items-center mb-2">
+              <i class="fas fa-exclamation-triangle me-2 text-red-400"></i>
+              <h6 class="mb-0 fw-bold"><%= pluralize(@teacher_assignment.errors.count, "error") %> prohibited this assignment from being saved:</h6>
+            </div>
+            <ul class="mb-0">
+              <% @teacher_assignment.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="mb-4">
+          <%= form.label :teacher_id, "Teacher", class: "form-label fw-semibold text-indigo-300" %>
+          <div class="input-group">
+            <span class="input-group-text bg-gray-700 border-gray-600 text-indigo-400"><i class="fas fa-chalkboard-teacher"></i></span>
+            <%= form.collection_select :teacher_id, @available_teachers, :id, :name, 
+                                      { prompt: "Select a teacher" }, 
+                                      { class: "form-select bg-gray-700 text-white border-gray-600", required: true } %>
+          </div>
+          <small class="form-text text-gray-400">Choose a teacher to assign to this class</small>
+        </div>
+
+        <div class="mb-4">
+          <%= form.label :start_date, "Start Date", class: "form-label fw-semibold text-indigo-300" %>
+          <div class="input-group">
+            <span class="input-group-text bg-gray-700 border-gray-600 text-indigo-400"><i class="fas fa-calendar"></i></span>
+            <%= form.date_field :start_date, class: "form-control bg-gray-700 text-white border-gray-600", required: true %>
+          </div>
+          <small class="form-text text-gray-400">When does this teacher start teaching this class?</small>
+        </div>
+
+        <div class="mb-4">
+          <div class="form-check form-switch">
+            <%= form.check_box :is_primary_teacher, class: "form-check-input bg-purple-900 border-purple-600", role: "switch", id: "primaryTeacherSwitch" %>
+            <%= form.label :is_primary_teacher, "Primary Teacher for this Class?", class: "form-check-label fw-semibold text-indigo-300", for: "primaryTeacherSwitch" %>
+          </div>
+          <small class="form-text text-gray-400">Primary teachers are responsible for overall class management</small>
+        </div>
+
+        <%= form.hidden_field :active, value: true %>
+
+        <div class="card bg-gray-700/50 mb-4 border border-gray-600">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-info-circle text-indigo-400 me-3 fa-lg"></i>
+              <div>
+                <h6 class="text-indigo-300 mb-1">What does a Primary Teacher do?</h6>
+                <p class="text-gray-400 mb-0">Primary teachers have additional responsibilities including managing student enrollments, generating class reports, and coordinating with other teachers.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-4 border-gray-700">
+
+        <div class="d-flex justify-content-between">
+          <%= link_to admin_class_standard_path(@class_standard), class: "btn btn-outline-secondary bg-transparent border-gray-500 text-gray-400 hover:bg-gray-700" do %>
+            <i class="fas fa-arrow-left me-1"></i> Back to Class
+          <% end %>
+          
+          <button type="submit" class="btn bg-gradient-to-r from-indigo-600 to-purple-600 border-0 text-white hover:opacity-90">
+            <i class="fas fa-user-plus me-1"></i> Assign Teacher
+          </button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<style>
+  .bg-gradient-to-r {
+    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+  }
+  .from-indigo-400 {
+    --tw-gradient-from: #818cf8;
+    --tw-gradient-to: rgb(129 140 248 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .to-purple-500 {
+    --tw-gradient-to: #a855f7;
+  }
+  .from-indigo-600 {
+    --tw-gradient-from: #4f46e5;
+    --tw-gradient-to: rgb(79 70 229 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .to-purple-600 {
+    --tw-gradient-to: #9333ea;
+  }
+  .bg-gray-700 {
+    background-color: #374151;
+  }
+  .bg-gray-700\/50 {
+    background-color: rgba(55, 65, 81, 0.5);
+  }
+  .bg-gray-800 {
+    background-color: #1f2937;
+  }
+  .bg-gray-900 {
+    background-color: #111827;
+  }
+  .bg-purple-900 {
+    background-color: #581c87;
+  }
+  .bg-red-900\/50 {
+    background-color: rgba(127, 29, 29, 0.5);
+  }
+  .border-purple-600 {
+    border-color: #9333ea;
+  }
+  .border-gray-600 {
+    border-color: #4b5563;
+  }
+  .border-gray-700 {
+    border-color: #374151;
+  }
+  .border-gray-500 {
+    border-color: #6b7280;
+  }
+  .border-red-600 {
+    border-color: #dc2626;
+  }
+  .text-indigo-300 {
+    color: #a5b4fc;
+  }
+  .text-indigo-400 {
+    color: #818cf8;
+  }
+  .text-gray-400 {
+    color: #9ca3af;
+  }
+  .text-red-200 {
+    color: #fecaca;
+  }
+  .text-red-400 {
+    color: #f87171;
+  }
+  .bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  .text-transparent {
+    color: transparent;
+  }
+  .hover\:bg-gray-700:hover {
+    background-color: #374151;
+  }
+  .hover\:opacity-90:hover {
+    opacity: 0.9;
+  }
+
+  /* Override Bootstrap styles */
+  .breadcrumb-item+.breadcrumb-item::before {
+    color: #6b7280;
+  }
+</style> 

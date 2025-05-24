@@ -9,6 +9,23 @@ class Student::DashboardController < ApplicationController
                                 .order(created_at: :desc)
                                 .limit(5)
     @attendance_stats = calculate_attendance_stats
+    
+    # Group attendances by class/subject
+    @attendance_by_subject = @student.attendances
+                                    .select('class_standard, COUNT(*) as total_count, SUM(CASE WHEN status = \'present\' THEN 1 ELSE 0 END) as present_count')
+                                    .group(:class_standard)
+                                    .each_with_object({}) do |data, hash|
+                                      percentage = (data.present_count.to_f / data.total_count * 100).round(2)
+                                      class_obj = ClassStandard.find_by(code: data.class_standard)
+                                      class_name = class_obj ? class_obj.display_name : data.class_standard
+                                      hash[data.class_standard] = {
+                                        name: class_name,
+                                        total: data.total_count,
+                                        present: data.present_count,
+                                        percentage: percentage,
+                                        status: percentage >= 75 ? 'good' : 'warning'
+                                      }
+                                    end
   end
 
   private

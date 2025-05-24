@@ -22,13 +22,23 @@ Rails.application.routes.draw do
     # Admin routes
     namespace :admin do
       root 'dashboard#index'
+      
+      # Add a direct route for assigning classes to teachers
+      get 'teacher/:teacher_id/assign_class', to: 'teacher_assignments#assign_class', as: :teacher_assign_class
+      post 'teacher/:teacher_id/assign_class', to: 'teacher_assignments#process_assign_class', as: :process_teacher_assign_class
+      
       resources :users do
         member do
           patch :update_role
         end
       end
       resources :class_standards do
-        resources :teacher_assignments, only: [:new, :create, :destroy]
+        resources :teacher_assignments, only: [:new, :create, :destroy] do
+          collection do
+            get :check_teacher_classes
+            post :activate_all_assignments
+          end
+        end
       end
       resources :reports, only: [:index, :show] do
         collection do
@@ -42,7 +52,7 @@ Rails.application.routes.draw do
 
     # Teacher routes
     namespace :teacher do
-      root 'dashboard#index'
+      root 'dashboard#index', constraints: lambda { |req| req.env['warden'].user&.teacher? }
       resources :attendance, only: [:index, :new, :create] do
         collection do
           get :class_standards
@@ -60,7 +70,7 @@ Rails.application.routes.draw do
 
     # Student routes (for authenticated students)
     namespace :student do
-      root 'dashboard#index'
+      root 'dashboard#index', constraints: lambda { |req| req.env['warden'].user&.student? }
       resources :attendance, only: [:index] do
         collection do
           get :report

@@ -1,0 +1,234 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-2xl font-semibold text-gray-900">Attendance Report</h1>
+      <p class="mt-2 text-sm text-gray-700">
+        Detailed attendance report for <%= @student.full_name %>.
+      </p>
+    </div>
+    <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+      <%= link_to report_student_attendance_index_path(format: :pdf), class: "inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto" do %>
+        <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Download PDF
+      <% end %>
+      <%= link_to student_attendance_index_path, class: "ml-3 inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto" do %>
+        <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+        </svg>
+        Back to Attendance
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 p-3 rounded-md bg-blue-500 bg-opacity-10">
+            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Total Classes</dt>
+              <dd class="flex items-baseline">
+                <div class="text-2xl font-semibold text-gray-900"><%= @total_classes %></div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 p-3 rounded-md bg-green-500 bg-opacity-10">
+            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Present</dt>
+              <dd class="flex items-baseline">
+                <div class="text-2xl font-semibold text-gray-900"><%= @present_classes %></div>
+                <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                  <span class="sr-only">Rate</span>
+                  <%= number_to_percentage(@present_classes.to_f / @total_classes * 100, precision: 1) if @total_classes > 0 %>
+                </div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 p-3 rounded-md bg-red-500 bg-opacity-10">
+            <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Absent</dt>
+              <dd class="flex items-baseline">
+                <div class="text-2xl font-semibold text-gray-900"><%= @absent_classes %></div>
+                <div class="ml-2 flex items-baseline text-sm font-semibold text-red-600">
+                  <span class="sr-only">Rate</span>
+                  <%= number_to_percentage(@absent_classes.to_f / @total_classes * 100, precision: 1) if @total_classes > 0 %>
+                </div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 p-3 rounded-md bg-yellow-500 bg-opacity-10">
+            <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Late</dt>
+              <dd class="flex items-baseline">
+                <div class="text-2xl font-semibold text-gray-900"><%= @late_classes %></div>
+                <div class="ml-2 flex items-baseline text-sm font-semibold text-yellow-600">
+                  <span class="sr-only">Rate</span>
+                  <%= number_to_percentage(@late_classes.to_f / @total_classes * 100, precision: 1) if @total_classes > 0 %>
+                </div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overall Attendance Chart -->
+  <div class="mt-8 bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+      <h3 class="text-lg leading-6 font-medium text-gray-900">Overall Attendance</h3>
+    </div>
+    <div class="px-4 py-5 sm:p-6">
+      <div class="flex items-center justify-between">
+        <div class="text-center flex-1">
+          <div class="relative pt-1">
+            <div class="flex mb-2 items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                  Attendance Rate
+                </span>
+              </div>
+              <div class="text-right">
+                <span class="text-xs font-semibold inline-block text-blue-600">
+                  <%= number_to_percentage(@attendance_percentage, precision: 1) %>
+                </span>
+              </div>
+            </div>
+            <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
+              <div style="width:<%= @attendance_percentage %>%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center <%= @attendance_percentage >= 75 ? 'bg-green-500' : @attendance_percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500' %>"></div>
+            </div>
+          </div>
+          
+          <div class="flex justify-center space-x-4 mt-4">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-gray-900"><%= @present_classes %></div>
+              <div class="text-xs text-gray-500">Present</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-gray-900"><%= @absent_classes %></div>
+              <div class="text-xs text-gray-500">Absent</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-gray-900"><%= @late_classes %></div>
+              <div class="text-xs text-gray-500">Late</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subject-wise Attendance -->
+  <div class="mt-8 bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+      <h3 class="text-lg leading-6 font-medium text-gray-900">Subject-wise Attendance</h3>
+    </div>
+    <div class="px-4 py-5 sm:p-6">
+      <% if @attendance_by_subject.any? %>
+        <div class="space-y-6">
+          <% @attendance_by_subject.each do |code, data| %>
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-base font-medium text-gray-900"><%= data[:name] %></h4>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= data[:status] == 'good' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                  <%= data[:percentage] %>%
+                </span>
+              </div>
+              <div class="relative pt-1">
+                <div class="overflow-hidden h-2 mb-1 text-xs flex rounded bg-gray-200">
+                  <div style="width:<%= data[:percentage] %>%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center <%= data[:status] == 'good' ? 'bg-green-500' : 'bg-red-500' %>"></div>
+                </div>
+              </div>
+              <div class="text-xs text-gray-500">
+                Present: <%= data[:present] %> / Total: <%= data[:total] %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-6">
+          <p class="text-gray-500">No subject-wise attendance data available.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Monthly Trend -->
+  <div class="mt-8 bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+      <h3 class="text-lg leading-6 font-medium text-gray-900">Monthly Attendance Trend</h3>
+    </div>
+    <div class="px-4 py-5 sm:p-6">
+      <% if @monthly_trend.any? %>
+        <div class="space-y-6">
+          <% @monthly_trend.sort.each do |month, data| %>
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-base font-medium text-gray-900"><%= month.strftime("%B %Y") %></h4>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= data[:percentage] >= 75 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                  <%= data[:percentage] %>%
+                </span>
+              </div>
+              <div class="relative pt-1">
+                <div class="overflow-hidden h-2 mb-1 text-xs flex rounded bg-gray-200">
+                  <div style="width:<%= data[:percentage] %>%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center <%= data[:percentage] >= 75 ? 'bg-green-500' : 'bg-red-500' %>"></div>
+                </div>
+              </div>
+              <div class="text-xs text-gray-500">
+                Present: <%= data[:present] %> / Total: <%= data[:total] %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-6">
+          <p class="text-gray-500">No monthly trend data available.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div> 

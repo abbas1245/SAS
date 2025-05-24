@@ -1,0 +1,179 @@
+<div class="min-h-screen bg-gray-100">
+  <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <!-- Page header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Teacher Dashboard</h1>
+      <p class="mt-2 text-sm text-gray-600">Welcome back, <%= @teacher.full_name %></p>
+    </div>
+
+    <!-- Stats -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Today's Statistics</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Total Classes</dt>
+              <dd class="mt-1 text-3xl font-semibold text-indigo-600"><%= @today_stats[:total_classes] %></dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Classes Conducted Today</dt>
+              <dd class="mt-1 text-3xl font-semibold text-indigo-600"><%= @today_stats[:classes_today] %></dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Students Attended</dt>
+              <dd class="mt-1 text-3xl font-semibold text-indigo-600"><%= @today_stats[:total_students] %></dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Present</dt>
+              <dd class="mt-1 text-3xl font-semibold text-green-600"><%= @today_stats[:present_students] %></dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Absent</dt>
+              <dd class="mt-1 text-3xl font-semibold text-red-600"><%= @today_stats[:absent_students] %></dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Late</dt>
+              <dd class="mt-1 text-3xl font-semibold text-yellow-600"><%= @today_stats[:late_students] %></dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <%= link_to teacher_attendance_index_path, class: "block" do %>
+          <div class="bg-white overflow-hidden shadow rounded-lg hover:bg-gray-50 transition-colors duration-300">
+            <div class="px-4 py-5 sm:p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                  <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <div class="ml-5">
+                  <h3 class="text-lg font-medium text-gray-900">Mark Attendance</h3>
+                  <p class="mt-1 text-sm text-gray-500">Record student attendance for today</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <%= link_to teacher_reports_path, class: "block" do %>
+          <div class="bg-white overflow-hidden shadow rounded-lg hover:bg-gray-50 transition-colors duration-300">
+            <div class="px-4 py-5 sm:p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                  <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div class="ml-5">
+                  <h3 class="text-lg font-medium text-gray-900">View Reports</h3>
+                  <p class="mt-1 text-sm text-gray-500">Access attendance and class reports</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Classes -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Your Classes</h2>
+      <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <ul class="divide-y divide-gray-200">
+          <% if @class_standards.present? %>
+            <% @class_standards.each do |class_standard| %>
+              <li>
+                <div class="px-4 py-4 sm:px-6">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-indigo-100 text-indigo-700 rounded-full">
+                        <%= class_standard.year %>
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-indigo-600"><%= class_standard.display_name %></div>
+                        <div class="text-sm text-gray-500">Code: <%= class_standard.code %></div>
+                      </div>
+                    </div>
+                    <div>
+                      <%= link_to "Mark Attendance", teacher_attendance_index_path(class_standard_id: class_standard.id), class: "inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            <% end %>
+          <% else %>
+            <li class="px-4 py-6 sm:px-6 text-center text-gray-500">
+              <p>No classes assigned to you yet.</p>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Recent activity -->
+    <div>
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Attendance Activity</h2>
+      <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <ul class="divide-y divide-gray-200">
+          <% if @recent_attendances.present? %>
+            <% @recent_attendances.each do |attendance| %>
+              <li>
+                <div class="px-4 py-4 sm:px-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="text-sm font-medium text-indigo-600"><%= attendance.student.full_name %></div>
+                      <div class="text-sm text-gray-500">
+                        <%= attendance.date.strftime("%B %d, %Y") %> - 
+                        <span class="<%= attendance.status_color %>"><%= attendance.status&.titleize || 'Not Set' %></span>
+                      </div>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      Class: <%= attendance.class_standard %>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            <% end %>
+          <% else %>
+            <li class="px-4 py-6 sm:px-6 text-center text-gray-500">
+              <p>No recent attendance activity.</p>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div> 

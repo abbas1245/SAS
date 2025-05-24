@@ -7,6 +7,7 @@ class Teacher::DashboardController < ApplicationController
     @class_standards = @teacher.teaching_class_standards.active
     @recent_attendances = @teacher.marked_attendances
                                 .includes(:student)
+                                .where.not(status: nil)
                                 .order(created_at: :desc)
                                 .limit(5)
     @today_stats = calculate_today_stats

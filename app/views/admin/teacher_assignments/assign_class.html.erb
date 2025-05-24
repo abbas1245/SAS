@@ -1,0 +1,209 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <nav class="flex" aria-label="Breadcrumb">
+      <ol class="flex items-center space-x-4">
+        <li>
+          <div>
+            <%= link_to admin_root_path, class: "text-gray-500 hover:text-gray-700" do %>
+              <svg class="flex-shrink-0 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+              </svg>
+            <% end %>
+          </div>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <svg class="flex-shrink-0 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            </svg>
+            <%= link_to "Users", admin_users_path, class: "ml-4 text-sm font-medium text-gray-500 hover:text-gray-700" %>
+          </div>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <svg class="flex-shrink-0 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            </svg>
+            <span class="ml-4 text-sm font-medium text-gray-500" aria-current="page">Assign Class</span>
+          </div>
+        </li>
+      </ol>
+    </nav>
+  </div>
+
+  <div class="md:flex md:items-center md:justify-between mb-8">
+    <div class="flex-1 min-w-0">
+      <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+        Assign Class to <%= @teacher.full_name %>
+      </h2>
+      <p class="mt-1 text-sm text-gray-500">
+        Add a new class to this teacher's assignments
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <!-- Assignment Form -->
+    <div class="lg:col-span-2">
+      <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+          <h3 class="text-lg leading-6 font-medium text-gray-900 flex items-center">
+            <svg class="mr-2 h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+            </svg>
+            Class Assignment Form
+          </h3>
+          <p class="mt-1 max-w-2xl text-sm text-gray-500">Complete the form to assign a class to this teacher.</p>
+        </div>
+        <div class="px-4 py-5 sm:p-6">
+          <%= form_with(model: @teacher_assignment, url: admin_process_teacher_assign_class_path(@teacher), local: true, id: "teacherAssignForm") do |form| %>
+            <% if @teacher_assignment.errors.any? %>
+              <div class="mb-6 rounded-md bg-red-50 p-4">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">
+                      There <%= @teacher_assignment.errors.count == 1 ? 'is' : 'are' %> <%= pluralize(@teacher_assignment.errors.count, "error") %> with this assignment
+                    </h3>
+                    <div class="mt-2 text-sm text-red-700">
+                      <ul class="list-disc pl-5 space-y-1">
+                        <% @teacher_assignment.errors.full_messages.each do |message| %>
+                          <li><%= message %></li>
+                        <% end %>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+
+            <%= form.hidden_field :teacher_id %>
+
+            <div class="space-y-6">
+              <div>
+                <label for="class_standard_id" class="block text-sm font-medium text-gray-700">Select Class</label>
+                <div class="mt-1 relative rounded-md shadow-sm">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+                    </svg>
+                  </div>
+                  <%= form.collection_select :class_standard_id, @available_classes, :id, :display_name, 
+                                            { prompt: "Select a class" }, 
+                                            { class: "focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md", required: true } %>
+                </div>
+                <p class="mt-2 text-sm text-gray-500">Choose a class to assign to this teacher</p>
+              </div>
+
+              <div class="relative flex items-start">
+                <div class="flex items-center h-5">
+                  <%= form.check_box :is_primary_teacher, class: "focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded", id: "primaryTeacherSwitch" %>
+                </div>
+                <div class="ml-3 text-sm">
+                  <label for="primaryTeacherSwitch" class="font-medium text-gray-700">Primary Teacher for this Class?</label>
+                  <p class="text-gray-500">Primary teachers are responsible for overall class management</p>
+                </div>
+              </div>
+
+              <div class="rounded-md bg-indigo-50 p-4">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="ml-3">
+                    <h3 class="text-sm font-medium text-indigo-800">Important Information</h3>
+                    <div class="mt-2 text-sm text-indigo-700">
+                      <p>After assignment, the teacher will be able to see this class in their dashboard and mark attendance for students in this class.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-5 mt-6 border-t border-gray-200">
+              <div class="flex justify-end">
+                <%= link_to admin_users_path, class: "bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" do %>
+                  Cancel
+                <% end %>
+                <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Assign Class to Teacher
+                </button>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Assignments -->
+    <div class="lg:col-span-1">
+      <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+          <h3 class="text-lg leading-6 font-medium text-gray-900 flex items-center">
+            <svg class="mr-2 h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1zm-5 8.274l-.818 2.552c.25.112.526.174.818.174.292 0 .569-.062.818-.174L5 10.274zm10 0l-.818 2.552c.25.112.526.174.818.174.292 0 .569-.062.818-.174L15 10.274z" clip-rule="evenodd" />
+            </svg>
+            Current Assignments
+          </h3>
+          <p class="mt-1 max-w-2xl text-sm text-gray-500">
+            Classes already assigned to this teacher
+          </p>
+        </div>
+        <div>
+          <ul role="list" class="divide-y divide-gray-200">
+            <% if @teacher.teacher_class_standards.empty? %>
+              <li class="px-4 py-8 sm:px-6 text-center">
+                <div class="flex flex-col items-center justify-center">
+                  <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  <h3 class="mt-2 text-sm font-medium text-gray-900">No classes assigned</h3>
+                  <p class="mt-1 text-sm text-gray-500">This teacher has no classes assigned yet.</p>
+                </div>
+              </li>
+            <% else %>
+              <% @teacher.teacher_class_standards.each do |tcs| %>
+                <% class_standard = tcs.class_standard %>
+                <li class="px-4 py-4 sm:px-6">
+                  <div class="flex items-center justify-between">
+                    <div class="flex flex-col">
+                      <p class="text-sm font-medium text-indigo-600 truncate">
+                        <%= class_standard.name %> <%= class_standard.section.present? ? "- #{class_standard.section}" : "" %>
+                      </p>
+                      <p class="text-sm text-gray-500">
+                        Code: <%= class_standard.code %>
+                      </p>
+                    </div>
+                    <div>
+                      <% if tcs.active? && class_standard.active? %>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
+                            <circle cx="4" cy="4" r="3" />
+                          </svg>
+                          Active
+                        </span>
+                      <% else %>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8">
+                            <circle cx="4" cy="4" r="3" />
+                          </svg>
+                          Inactive
+                        </span>
+                      <% end %>
+                    </div>
+                  </div>
+                </li>
+              <% end %>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

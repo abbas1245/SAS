@@ -87,68 +87,6 @@
         </div>
       </div>
 
-      <!-- Recent Activities -->
-      <div class="mt-8">
-        <div class="bg-white shadow rounded-lg">
-          <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Recent Activities</h3>
-            <%= link_to admin_reports_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-500" do %>
-              View all reports
-            <% end %>
-          </div>
-          <div class="border-t border-gray-200">
-            <div class="bg-white shadow overflow-hidden sm:rounded-md">
-              <ul role="list" class="divide-y divide-gray-200">
-                <% @recent_activities.each do |attendance| %>
-                  <li>
-                    <div class="px-4 py-4 sm:px-6">
-                      <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                          <p class="text-sm font-medium text-indigo-600 truncate">
-                            <%= attendance.student.full_name %>
-                          </p>
-                          <p class="ml-2 flex-shrink-0 flex">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                              <%= attendance.status == 'present' ? 'bg-green-100 text-green-800' : 
-                                  attendance.status == 'absent' ? 'bg-red-100 text-red-800' : 
-                                  'bg-yellow-100 text-yellow-800' %>">
-                              <%= attendance.status.titleize %>
-                            </span>
-                          </p>
-                        </div>
-                        <div class="ml-2 flex-shrink-0 flex">
-                          <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                            <%= attendance.class_standard %>
-                          </p>
-                        </div>
-                      </div>
-                      <div class="mt-2 sm:flex sm:justify-between">
-                        <div class="sm:flex">
-                          <p class="flex items-center text-sm text-gray-500">
-                            <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <%= attendance.teacher.full_name %>
-                          </p>
-                        </div>
-                        <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                          <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <p>
-                            <%= attendance.date.strftime("%B %d, %Y") %>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                <% end %>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Quick Actions -->
       <div class="mt-8">
         <div class="bg-white shadow rounded-lg">
@@ -183,16 +121,16 @@
                 </div>
               <% end %>
 
-              <%= link_to admin_reports_path, class: "relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500" do %>
+              <%= link_to admin_users_path(role: :teacher), class: "relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500" do %>
                 <div class="flex-shrink-0">
-                  <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="absolute inset-0" aria-hidden="true"></span>
-                  <p class="text-sm font-medium text-gray-900">View Reports</p>
-                  <p class="text-sm text-gray-500">Generate attendance reports</p>
+                  <p class="text-sm font-medium text-gray-900">Assign Class to Teacher</p>
+                  <p class="text-sm text-gray-500">Add classes to teachers for attendance</p>
                 </div>
               <% end %>
             </div>

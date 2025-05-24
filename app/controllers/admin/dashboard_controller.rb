@@ -6,9 +6,6 @@ class Admin::DashboardController < ApplicationController
     @total_students = User.students.count
     @total_teachers = User.teachers.count
     @total_classes = ClassStandard.active.count
-    @recent_activities = Attendance.includes(:student, :teacher)
-                                 .order(created_at: :desc)
-                                 .limit(10)
   end
 
   private

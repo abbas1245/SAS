@@ -91,6 +91,54 @@
         </div>
       </div>
 
+      <!-- Subject-wise Attendance -->
+      <div class="mt-8">
+        <div class="bg-white shadow rounded-lg">
+          <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Subject-wise Attendance</h3>
+          </div>
+          <div class="border-t border-gray-200">
+            <div class="bg-white shadow overflow-hidden sm:rounded-md">
+              <ul role="list" class="divide-y divide-gray-200">
+                <% if @attendance_by_subject.any? %>
+                  <% @attendance_by_subject.each do |code, data| %>
+                    <li>
+                      <div class="px-4 py-4 sm:px-6">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <h4 class="text-sm font-medium text-gray-900">
+                              <%= data[:name] %>
+                            </h4>
+                            <div class="mt-1 flex items-center">
+                              <p class="text-sm text-gray-500">
+                                Attendance: <%= data[:present] %>/<%= data[:total] %> classes
+                              </p>
+                              <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                <%= data[:status] == 'good' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                                <%= data[:percentage] %>%
+                              </span>
+                            </div>
+                          </div>
+                          <div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
+                              <div class="<%= data[:status] == 'good' ? 'bg-green-600' : 'bg-red-600' %> h-2.5 rounded-full" style="width: <%= [data[:percentage], 100].min %>%"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  <% end %>
+                <% else %>
+                  <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                    No attendance records found for any subjects
+                  </li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Recent Activities -->
       <div class="mt-8">
         <div class="bg-white shadow rounded-lg">
@@ -114,13 +162,19 @@
                                 <%= attendance.status == 'present' ? 'bg-green-100 text-green-800' : 
                                     attendance.status == 'absent' ? 'bg-red-100 text-red-800' : 
                                     'bg-yellow-100 text-yellow-800' %>">
-                                <%= attendance.status.titleize %>
+                                <%= attendance.status&.titleize || 'Not Set' %>
                               </span>
                             </p>
                           </div>
                           <div class="ml-2 flex-shrink-0 flex">
                             <p class="text-sm text-gray-500">
-                              Marked by <%= attendance.teacher.full_name %>
+                              <% 
+                                class_obj = ClassStandard.find_by(code: attendance.class_standard) 
+                                class_name = class_obj ? class_obj.display_name : attendance.class_standard
+                              %>
+                              Class: <%= class_name %>
+                              <span class="ml-2">|</span>
+                              <span class="ml-2">Marked by: <%= attendance.teacher.full_name %></span>
                             </p>
                           </div>
                         </div>

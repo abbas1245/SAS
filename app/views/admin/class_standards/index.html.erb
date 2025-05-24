@@ -1,0 +1,257 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-2xl font-semibold text-gray-900">Classes</h1>
+      <p class="mt-2 text-sm text-gray-700">
+        A list of all class standards in the system including their details and status.
+      </p>
+    </div>
+    <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+      <%= link_to 'Add Class', new_admin_class_standard_path, class: "inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto" %>
+    </div>
+  </div>
+  
+  <!-- Class Filter -->
+  <div class="mt-4 bg-white shadow rounded-md p-4">
+    <div class="flex flex-wrap items-center space-x-4">
+      <div class="flex-1">
+        <span class="text-sm font-medium text-gray-700 mr-2">Filter by status:</span>
+        <a href="#" class="px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800" data-filter="all">All Classes</a>
+        <a href="#" class="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800" data-filter="active">Active Only</a>
+        <a href="#" class="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800" data-filter="inactive">Inactive Only</a>
+      </div>
+      <div class="relative">
+        <input type="text" id="classSearch" placeholder="Search classes..." class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-10 py-2">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 flex flex-col">
+    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Name</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Code</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Year</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Section</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Teachers</th>
+                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white">
+              <% @class_standards.each do |class_standard| %>
+                <tr class="class-row" data-status="<%= class_standard.active ? 'active' : 'inactive' %>">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                    <%= class_standard.name %>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      <%= class_standard.code %>
+                    </span>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <%= class_standard.year %>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <%= class_standard.section || '-' %>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <% if class_standard.active %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Active
+                      </span>
+                    <% else %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        Inactive
+                      </span>
+                    <% end %>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <% teacher_count = class_standard.teacher_class_standards.count %>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <%= teacher_count %> <%= teacher_count == 1 ? 'Teacher' : 'Teachers' %>
+                    </span>
+                  </td>
+                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                    <%= link_to 'View', admin_class_standard_path(class_standard), class: "text-indigo-600 hover:text-indigo-900" %>
+                    <%= link_to 'Edit', edit_admin_class_standard_path(class_standard), class: "ml-4 text-indigo-600 hover:text-indigo-900" %>
+                    <%= link_to 'Delete', admin_class_standard_path(class_standard), 
+                                method: :delete, 
+                                data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, 
+                                class: "ml-4 text-red-600 hover:text-red-900" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+          <% if @class_standards.empty? %>
+            <div class="px-6 py-12 text-center border-t border-gray-200">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">No classes</h3>
+              <p class="mt-1 text-sm text-gray-500">Get started by creating a new class.</p>
+              <div class="mt-6">
+                <%= link_to new_admin_class_standard_path, class: "inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" do %>
+                  <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add Class
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('classSearch');
+    searchInput.addEventListener('keyup', function() {
+      const searchValue = this.value.toLowerCase();
+      const rows = document.querySelectorAll('.class-row');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchValue)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+
+    // Filter functionality
+    const filterLinks = document.querySelectorAll('[data-filter]');
+    filterLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Update active filter appearance
+        filterLinks.forEach(l => l.classList.replace('bg-indigo-100', 'bg-gray-100'));
+        filterLinks.forEach(l => l.classList.replace('text-indigo-800', 'text-gray-800'));
+        this.classList.replace('bg-gray-100', 'bg-indigo-100');
+        this.classList.replace('text-gray-800', 'text-indigo-800');
+        
+        const filterValue = this.getAttribute('data-filter');
+        const rows = document.querySelectorAll('.class-row');
+        
+        rows.forEach(row => {
+          if (filterValue === 'all') {
+            row.style.display = '';
+          } else {
+            const status = row.getAttribute('data-status');
+            row.style.display = (status === filterValue) ? '' : 'none';
+          }
+        });
+      });
+    });
+  });
+</script>
+
+<style>
+  .active-row {
+    background-color: rgba(99, 102, 241, 0.05);
+  }
+  .inactive-row {
+    background-color: rgba(239, 68, 68, 0.05);
+  }
+  .bg-gradient-to-r {
+    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+  }
+  .from-indigo-400 {
+    --tw-gradient-from: #818cf8;
+    --tw-gradient-to: rgb(129 140 248 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .to-purple-500 {
+    --tw-gradient-to: #a855f7;
+  }
+  .from-green-500 {
+    --tw-gradient-from: #22c55e;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .to-green-600 {
+    --tw-gradient-to: #16a34a;
+  }
+  .from-red-500 {
+    --tw-gradient-from: #ef4444;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .to-red-600 {
+    --tw-gradient-to: #dc2626;
+  }
+  .bg-gray-700 {
+    background-color: #374151;
+  }
+  .bg-gray-800 {
+    background-color: #1f2937;
+  }
+  .bg-gray-900 {
+    background-color: #111827;
+  }
+  .text-indigo-300 {
+    color: #a5b4fc;
+  }
+  .text-indigo-400 {
+    color: #818cf8;
+  }
+  .btn-gray-700 {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  .btn-outline-indigo {
+    color: #818cf8;
+    border-color: #818cf8;
+  }
+  .bg-indigo-600 {
+    background-color: #4f46e5;
+  }
+  .border-indigo-500 {
+    border-color: #6366f1;
+  }
+  .hover\:bg-indigo-700:hover {
+    background-color: #4338ca;
+  }
+  .hover\:bg-indigo-500\/30:hover {
+    background-color: rgba(99, 102, 241, 0.3);
+  }
+  .hover\:bg-purple-500\/30:hover {
+    background-color: rgba(168, 85, 247, 0.3);
+  }
+  .hover\:bg-red-500\/30:hover {
+    background-color: rgba(239, 68, 68, 0.3);
+  }
+  .bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  .text-transparent {
+    color: transparent;
+  }
+  .text-white table {
+    color: white;
+  }
+  .text-white table a {
+    color: #a5b4fc;
+  }
+  #classTable th {
+    font-weight: 600;
+    color: #d1d5db;
+  }
+</style> 

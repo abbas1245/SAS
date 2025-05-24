@@ -1,0 +1,372 @@
+<div class="container-fluid px-4">
+  <!-- Breadcrumb and Actions Row -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><%= link_to 'Dashboard', admin_root_path %></li>
+          <li class="breadcrumb-item"><%= link_to 'Classes', admin_class_standards_path %></li>
+          <li class="breadcrumb-item active" aria-current="page"><%= @class_standard.name %></li>
+        </ol>
+      </nav>
+      <h2 class="mt-2 text-primary fw-bold">
+        <%= @class_standard.name %>
+        <% if @class_standard.active %>
+          <span class="badge bg-success fs-6">Active</span>
+        <% else %>
+          <span class="badge bg-danger fs-6">Inactive</span>
+        <% end %>
+      </h2>
+    </div>
+    
+    <div class="d-flex gap-2">
+      <%= link_to edit_admin_class_standard_path(@class_standard), class: 'btn btn-outline-warning' do %>
+        <i class="fas fa-edit me-1"></i> Edit
+      <% end %>
+      <%= link_to admin_class_standards_path, class: 'btn btn-outline-secondary' do %>
+        <i class="fas fa-arrow-left me-1"></i> Back
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <ul class="nav nav-tabs" id="classTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-semibold" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab" aria-controls="details" aria-selected="true">
+        <i class="fas fa-info-circle me-1"></i> Class Details
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-semibold" id="teachers-tab" data-bs-toggle="tab" data-bs-target="#teachers" type="button" role="tab" aria-controls="teachers" aria-selected="false">
+        <i class="fas fa-chalkboard-teacher me-1"></i> Teachers
+        <span class="badge bg-primary rounded-pill ms-1"><%= @class_standard.teacher_class_standards.count %></span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-semibold" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button" role="tab" aria-controls="students" aria-selected="false">
+        <i class="fas fa-user-graduate me-1"></i> Students
+        <span class="badge bg-primary rounded-pill ms-1"><%= @class_standard.students.count %></span>
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content bg-white border-start border-end border-bottom rounded-bottom shadow-sm" id="classTabContent">
+    <!-- Details Tab -->
+    <div class="tab-pane fade show active p-4" id="details" role="tabpanel" aria-labelledby="details-tab">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header bg-light py-3">
+              <h6 class="m-0 fw-bold text-primary">Basic Information</h6>
+            </div>
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-md-4 fw-bold text-muted">Name:</div>
+                <div class="col-md-8"><%= @class_standard.name %></div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-4 fw-bold text-muted">Code:</div>
+                <div class="col-md-8"><span class="badge bg-secondary"><%= @class_standard.code %></span></div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-4 fw-bold text-muted">Year:</div>
+                <div class="col-md-8"><%= @class_standard.year %></div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-4 fw-bold text-muted">Section:</div>
+                <div class="col-md-8"><%= @class_standard.section || '<span class="text-muted">N/A</span>'.html_safe %></div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-4 fw-bold text-muted">Status:</div>
+                <div class="col-md-8">
+                  <% if @class_standard.active %>
+                    <span class="badge bg-success">Active</span>
+                  <% else %>
+                    <span class="badge bg-danger">Inactive</span>
+                  <% end %>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-4 fw-bold text-muted">Full Code:</div>
+                <div class="col-md-8"><%= @class_standard.full_code %></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header bg-light py-3">
+              <h6 class="m-0 fw-bold text-primary">Class Statistics</h6>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 mb-4">
+                  <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                      <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                          <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Teachers</div>
+                          <div class="h5 mb-0 font-weight-bold text-gray-800"><%= @class_standard.teacher_class_standards.count %></div>
+                        </div>
+                        <div class="col-auto">
+                          <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                  <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                      <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                          <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Students</div>
+                          <div class="h5 mb-0 font-weight-bold text-gray-800"><%= @class_standard.students.count %></div>
+                        </div>
+                        <div class="col-auto">
+                          <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                  <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                      <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                          <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Primary Teacher</div>
+                          <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            <%= @class_standard.primary_teacher&.full_name || 'None' %>
+                          </div>
+                        </div>
+                        <div class="col-auto">
+                          <i class="fas fa-user-tie fa-2x text-gray-300"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                  <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                      <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                          <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Created</div>
+                          <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            <%= @class_standard.created_at&.strftime("%b %d, %Y") || 'N/A' %>
+                          </div>
+                        </div>
+                        <div class="col-auto">
+                          <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Teachers Tab -->
+    <div class="tab-pane fade p-4" id="teachers" role="tabpanel" aria-labelledby="teachers-tab">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0 fw-bold text-primary">Assigned Teachers</h5>
+        <%= link_to new_admin_class_standard_teacher_assignment_path(@class_standard), class: 'btn btn-success' do %>
+          <i class="fas fa-plus me-1"></i> Assign Teacher
+        <% end %>
+      </div>
+
+      <div class="table-responsive mb-4">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Teacher</th>
+              <th>Email</th>
+              <th>Assignment Date</th>
+              <th>Role</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @class_standard.teacher_class_standards.includes(:teacher).each do |assignment| %>
+              <tr>
+                <td class="d-flex align-items-center">
+                  <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                    <%= assignment.teacher.first_name[0] %><%= assignment.teacher.last_name[0] %>
+                  </div>
+                  <div>
+                    <%= assignment.teacher.full_name %>
+                    <% if assignment.is_primary_teacher %>
+                      <span class="badge bg-info ms-2">Primary</span>
+                    <% end %>
+                  </div>
+                </td>
+                <td><%= assignment.teacher.email %></td>
+                <td><%= assignment.start_date&.strftime("%b %d, %Y") || assignment.created_at&.strftime("%b %d, %Y") %></td>
+                <td>
+                  <% if assignment.is_primary_teacher %>
+                    <span class="badge bg-info">Primary Teacher</span>
+                  <% else %>
+                    <span class="badge bg-secondary">Co-Teacher</span>
+                  <% end %>
+                </td>
+                <td class="text-center">
+                  <%= link_to admin_class_standard_teacher_assignment_path(@class_standard, assignment), 
+                              method: :delete, 
+                              data: { confirm: 'Are you sure you want to remove this teacher?' }, 
+                              class: 'btn btn-sm btn-outline-danger' do %>
+                    <i class="fas fa-user-minus"></i> Remove
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+            <% if @class_standard.teacher_class_standards.empty? %>
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">
+                  <i class="fas fa-user-slash fa-3x mb-3"></i>
+                  <p>No teachers assigned to this class.</p>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Students Tab -->
+    <div class="tab-pane fade p-4" id="students" role="tabpanel" aria-labelledby="students-tab">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0 fw-bold text-primary">Enrolled Students</h5>
+        <div class="input-group" style="max-width: 300px;">
+          <input type="text" id="studentSearch" class="form-control" placeholder="Search students...">
+          <button class="btn btn-outline-secondary" type="button">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle" id="studentsTable">
+          <thead class="table-light">
+            <tr>
+              <th>Student</th>
+              <th>Roll Number</th>
+              <th>Attendance</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @class_standard.students.each do |student| %>
+              <tr>
+                <td class="d-flex align-items-center">
+                  <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                    <%= student.first_name[0] %><%= student.last_name[0] %>
+                  </div>
+                  <div>
+                    <%= student.full_name %>
+                    <% if student.short_attendance? %>
+                      <span class="badge bg-danger ms-2">Short Attendance</span>
+                    <% end %>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-secondary"><%= student.roll_number %></span>
+                </td>
+                <td>
+                  <% attendance_percentage = student.attendance_percentage %>
+                  <div class="d-flex align-items-center">
+                    <div class="progress flex-grow-1 me-2" style="height: 10px;">
+                      <div class="progress-bar <%= attendance_percentage >= 75 ? 'bg-success' : 'bg-danger' %>" role="progressbar" style="width: <%= attendance_percentage %>%;" aria-valuenow="<%= attendance_percentage %>" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span><%= attendance_percentage %>%</span>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm">
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="fas fa-user"></i> View
+                    </a>
+                    <a href="#" class="btn btn-outline-info">
+                      <i class="fas fa-calendar-check"></i> Attendance
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+            <% if @class_standard.students.empty? %>
+              <tr>
+                <td colspan="4" class="text-center py-4 text-muted">
+                  <i class="fas fa-user-graduate fa-3x mb-3"></i>
+                  <p>No students enrolled in this class.</p>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tabs
+    var triggerTabList = [].slice.call(document.querySelectorAll('#classTab button'))
+    triggerTabList.forEach(function (triggerEl) {
+      var tabTrigger = new bootstrap.Tab(triggerEl)
+      triggerEl.addEventListener('click', function (event) {
+        event.preventDefault()
+        tabTrigger.show()
+      })
+    })
+    
+    // Student search functionality
+    const studentSearch = document.getElementById('studentSearch');
+    if (studentSearch) {
+      studentSearch.addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#studentsTable tbody tr');
+        
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          if (text.includes(searchValue)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+    }
+  });
+</script>
+
+<style>
+  .border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+  }
+  .border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+  }
+  .border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+  }
+  .border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+  }
+  .avatar {
+    font-weight: bold;
+  }
+</style> 
