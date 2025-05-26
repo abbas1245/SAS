@@ -19,7 +19,9 @@ class Admin::UsersController < ApplicationController
   end
 
   def create
+    Rails.logger.info "Starting user creation with params: #{params[:user].inspect}"
     @user = User.new(user_params)
+    Rails.logger.info "Created new user object: #{@user.inspect}"
     
     # Special handling for student creation
     if @user.student?
@@ -33,7 +35,6 @@ class Admin::UsersController < ApplicationController
         
         if class_standard
           # Set the class_standard field to the class code directly
-          # DO NOT USE write_attribute or @user.class_standard = to avoid model methods
           @user[:class_standard] = class_code
           Rails.logger.info "Setting class_standard to #{class_code} for student (direct attribute access)"
         else
@@ -47,14 +48,33 @@ class Admin::UsersController < ApplicationController
       # Generate a random password for teachers
       generated_password = SecureRandom.hex(8)
       @user.password = generated_password
+      Rails.logger.info "Generated password for teacher: #{generated_password}"
     end
     
     # Try to save the user
     if @user.save
+      Rails.logger.info "User saved successfully: #{@user.inspect}"
       # Handle assigned class standards for teachers
       if @user.teacher? && params[:user][:assigned_class_standard_ids].present?
-        params[:user][:assigned_class_standard_ids].each do |class_id|
-          ClassStandardTeacherAssignment.create(teacher_id: @user.id, class_standard_id: class_id)
+        Rails.logger.info "Creating teacher class assignments for teacher #{@user.id} with classes: #{params[:user][:assigned_class_standard_ids]}"
+        params[:user][:assigned_class_standard_ids].each do |class_code|
+          next if class_code.blank?
+          class_standard = ClassStandard.find_by(code: class_code)
+          if class_standard
+            assignment = TeacherClassStandard.create(
+              teacher_id: @user.id, 
+              class_standard_id: class_standard.id,
+              start_date: Date.current,
+              active: true
+            )
+            if assignment.persisted?
+              Rails.logger.info "Successfully created teacher class assignment: #{assignment.inspect}"
+            else
+              Rails.logger.error "Failed to create teacher class assignment: #{assignment.errors.full_messages.join(', ')}"
+            end
+          else
+            Rails.logger.error "Could not find class standard with code: #{class_code}"
+          end
         end
         redirect_to admin_users_path, notice: "Teacher #{@user.full_name} was successfully created. Generated password: #{generated_password}"
       elsif @user.student?
@@ -158,20 +178,21 @@ class Admin::UsersController < ApplicationController
   end
 
   def load_class_standards
-    @class_standards = ClassStandard.active.order(:year, :section).map do |cs|
+    @class_standards_for_select = ClassStandard.active.order(:year, :section).map do |cs|
       ["#{cs.year} - #{cs.name}#{cs.section ? " (#{cs.section})" : ''}", cs.code]
     end
+    @class_standards = ClassStandard.active.order(:year, :section)
   end
 
   def user_params
+    # Remove assigned_class_standard_ids from permitted params since we handle it manually
     params.require(:user).permit(
       :email, 
       :first_name, 
       :last_name, 
       :role, 
       :class_standard,
-      :roll_number,
-      assigned_class_standard_ids: []
+      :roll_number
     )
   end
 

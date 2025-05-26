@@ -5,7 +5,7 @@
       <p class="mt-2 text-sm text-gray-700">
         Mark attendance for your assigned classes.
       </p>
-    </div>
+      </div>
     <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
       <span class="inline-flex items-center rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-800">
         <svg class="h-5 w-5 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,28 +118,28 @@
                             <div class="flex justify-center" data-student-id="<%= student.id %>">
                               <div class="inline-flex rounded-md shadow-sm" role="group">
                                 <div class="relative flex">
-                                  <input type="radio" id="present-<%= student.id %>" name="attendance[<%= student.id %>]" value="present" <%= present_checked %> class="attendance-radio sr-only">
-                                  <label for="present-<%= student.id %>" class="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-l-md border border-gray-300 bg-white hover:bg-gray-50 focus:z-10 focus:ring-1 focus:ring-indigo-500 <%= present_checked == 'checked' ? 'bg-green-100 text-green-800 border-green-500' : 'text-gray-700' %>">
+                                  <input type="radio" id="present-<%= student.id %>" name="attendance[<%= student.id %>]" value="present" <%= present_checked %> class="attendance-radio sr-only" required>
+                                  <label for="present-<%= student.id %>" class="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-l-md border border-gray-300 bg-white hover:bg-gray-50 focus:z-10 focus:ring-1 focus:ring-indigo-500 cursor-pointer transition-colors duration-200 <%= present_checked == 'checked' ? 'bg-green-100 text-green-800 border-green-500 ring-2 ring-green-500' : 'text-gray-700' %>">
                                     <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                     </svg>
                                     Present
                                   </label>
                                 </div>
-                                
+
                                 <div class="relative flex">
-                                  <input type="radio" id="absent-<%= student.id %>" name="attendance[<%= student.id %>]" value="absent" <%= absent_checked %> class="attendance-radio sr-only">
-                                  <label for="absent-<%= student.id %>" class="relative inline-flex items-center px-4 py-2 text-sm font-medium border-t border-b border-gray-300 bg-white hover:bg-gray-50 focus:z-10 focus:ring-1 focus:ring-indigo-500 <%= absent_checked == 'checked' ? 'bg-red-100 text-red-800 border-red-500' : 'text-gray-700' %>">
+                                  <input type="radio" id="absent-<%= student.id %>" name="attendance[<%= student.id %>]" value="absent" <%= absent_checked %> class="attendance-radio sr-only" required>
+                                  <label for="absent-<%= student.id %>" class="relative inline-flex items-center px-4 py-2 text-sm font-medium border-t border-b border-gray-300 bg-white hover:bg-gray-50 focus:z-10 focus:ring-1 focus:ring-indigo-500 cursor-pointer transition-colors duration-200 <%= absent_checked == 'checked' ? 'bg-red-100 text-red-800 border-red-500 ring-2 ring-red-500' : 'text-gray-700' %>">
                                     <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                     Absent
                                   </label>
                                 </div>
-                                
+
                                 <div class="relative flex">
-                                  <input type="radio" id="late-<%= student.id %>" name="attendance[<%= student.id %>]" value="late" <%= late_checked %> class="attendance-radio sr-only">
-                                  <label for="late-<%= student.id %>" class="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-r-md border border-gray-300 bg-white hover:bg-gray-50 focus:z-10 focus:ring-1 focus:ring-indigo-500 <%= late_checked == 'checked' ? 'bg-yellow-100 text-yellow-800 border-yellow-500' : 'text-gray-700' %>">
+                                  <input type="radio" id="late-<%= student.id %>" name="attendance[<%= student.id %>]" value="late" <%= late_checked %> class="attendance-radio sr-only" required>
+                                  <label for="late-<%= student.id %>" class="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-r-md border border-gray-300 bg-white hover:bg-gray-50 focus:z-10 focus:ring-1 focus:ring-indigo-500 cursor-pointer transition-colors duration-200 <%= late_checked == 'checked' ? 'bg-yellow-100 text-yellow-800 border-yellow-500 ring-2 ring-yellow-500' : 'text-gray-700' %>">
                                     <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -210,115 +210,109 @@
         <p class="mt-1 text-sm text-gray-500">
           Please select a class from the dropdown above to mark attendance.
         </p>
-      </div>
     </div>
+  </div>
   <% end %>
 </div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('attendance-form');
+    const markAllPresentBtn = document.getElementById('mark-all-present');
+    const resetBtn = document.getElementById('reset-attendance');
     const presentCount = document.getElementById('present-count');
     const absentCount = document.getElementById('absent-count');
     const lateCount = document.getElementById('late-count');
-    const attendanceForm = document.getElementById('attendance-form');
-    const markAllPresentBtn = document.getElementById('mark-all-present');
-    const resetAttendanceBtn = document.getElementById('reset-attendance');
     
-    // Initial count
-    updateAttendanceCounts();
-    
-    // Add event listeners to all attendance radios
-    document.querySelectorAll('.attendance-radio').forEach(radio => {
-      radio.addEventListener('change', function() {
-        updateAttendanceCounts();
+    // Update counts and styling when radio buttons change
+    function updateCounts() {
+      let present = 0;
+      let absent = 0;
+      let late = 0;
+      
+      document.querySelectorAll('.attendance-radio').forEach(radio => {
+        const label = document.querySelector(`label[for="${radio.id}"]`);
         
-        // Update label styling
-        const studentId = this.id.split('-')[1];
-        const status = this.value;
+        // Reset all labels first
+        label.classList.remove('bg-green-100', 'text-green-800', 'border-green-500', 'ring-2', 'ring-green-500',
+                             'bg-red-100', 'text-red-800', 'border-red-500', 'ring-2', 'ring-red-500',
+                             'bg-yellow-100', 'text-yellow-800', 'border-yellow-500', 'ring-2', 'ring-yellow-500');
+        label.classList.add('text-gray-700');
         
-        // Reset all labels for this student
-        document.querySelectorAll(`[for^="present-${studentId}"], [for^="absent-${studentId}"], [for^="late-${studentId}"]`).forEach(label => {
-          label.classList.remove('bg-green-100', 'text-green-800', 'border-green-500', 
-                               'bg-red-100', 'text-red-800', 'border-red-500',
-                               'bg-yellow-100', 'text-yellow-800', 'border-yellow-500');
-          label.classList.add('text-gray-700');
-        });
-        
-        // Set active label style
-        const activeLabel = document.querySelector(`[for="${this.id}"]`);
-        if (status === 'present') {
-          activeLabel.classList.add('bg-green-100', 'text-green-800', 'border-green-500');
-        } else if (status === 'absent') {
-          activeLabel.classList.add('bg-red-100', 'text-red-800', 'border-red-500');
-        } else if (status === 'late') {
-          activeLabel.classList.add('bg-yellow-100', 'text-yellow-800', 'border-yellow-500');
-        }
-        activeLabel.classList.remove('text-gray-700');
-      });
-    });
-    
-    // Mark all present button
-    if (markAllPresentBtn) {
-      markAllPresentBtn.addEventListener('click', function() {
-        document.querySelectorAll('input[value="present"]').forEach(radio => {
-          radio.checked = true;
-          radio.dispatchEvent(new Event('change'));
-        });
-      });
-    }
-    
-    // Reset button
-    if (resetAttendanceBtn) {
-      resetAttendanceBtn.addEventListener('click', function() {
-        document.querySelectorAll('.attendance-radio').forEach(radio => {
-          radio.checked = false;
-        });
-        
-        // Reset all label styling
-        document.querySelectorAll('[for^="present-"], [for^="absent-"], [for^="late-"]').forEach(label => {
-          label.classList.remove('bg-green-100', 'text-green-800', 'border-green-500', 
-                               'bg-red-100', 'text-red-800', 'border-red-500',
-                               'bg-yellow-100', 'text-yellow-800', 'border-yellow-500');
-          label.classList.add('text-gray-700');
-        });
-        
-        updateAttendanceCounts();
-      });
-    }
-    
-    // Attendance form submission
-    if (attendanceForm) {
-      attendanceForm.addEventListener('submit', function(e) {
-        // Check if any students don't have attendance marked
-        const totalStudents = document.querySelectorAll('[data-student-id]').length;
-        const markedStudents = document.querySelectorAll('.attendance-radio:checked').length;
-        
-        if (markedStudents < totalStudents) {
-          e.preventDefault(); // Prevent form submission to show the confirm dialog
-          if (!confirm(`${totalStudents - markedStudents} students don't have attendance marked. Continue anyway?`)) {
-            return;
-          } else {
-            // If user confirms, manually submit the form
-            this.submit();
+        if (radio.checked) {
+          switch(radio.value) {
+            case 'present':
+              present++;
+              label.classList.add('bg-green-100', 'text-green-800', 'border-green-500', 'ring-2', 'ring-green-500');
+              label.classList.remove('text-gray-700');
+              break;
+            case 'absent':
+              absent++;
+              label.classList.add('bg-red-100', 'text-red-800', 'border-red-500', 'ring-2', 'ring-red-500');
+              label.classList.remove('text-gray-700');
+              break;
+            case 'late':
+              late++;
+              label.classList.add('bg-yellow-100', 'text-yellow-800', 'border-yellow-500', 'ring-2', 'ring-yellow-500');
+              label.classList.remove('text-gray-700');
+              break;
           }
         }
-        
-        // Show loading state for better UX
-        const submitBtn = this.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...';
-        submitBtn.disabled = true;
       });
-    }
-    
-    // Update attendance counters
-    function updateAttendanceCounts() {
-      const present = document.querySelectorAll('input[value="present"]:checked').length;
-      const absent = document.querySelectorAll('input[value="absent"]:checked').length;
-      const late = document.querySelectorAll('input[value="late"]:checked').length;
       
       presentCount.textContent = present;
       absentCount.textContent = absent;
       lateCount.textContent = late;
     }
+    
+    // Add change event listeners to all radio buttons
+    document.querySelectorAll('.attendance-radio').forEach(radio => {
+      radio.addEventListener('change', updateCounts);
+    });
+    
+    // Mark all present button
+    markAllPresentBtn.addEventListener('click', function() {
+      document.querySelectorAll('.attendance-radio[value="present"]').forEach(radio => {
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change'));
+      });
+    });
+    
+    // Reset button
+    resetBtn.addEventListener('click', function() {
+      document.querySelectorAll('.attendance-radio').forEach(radio => {
+        radio.checked = false;
+      });
+      updateCounts();
+    });
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+      const students = document.querySelectorAll('[data-student-id]');
+      let allMarked = true;
+      
+      students.forEach(student => {
+        const radios = student.querySelectorAll('.attendance-radio');
+        let marked = false;
+        
+        radios.forEach(radio => {
+          if (radio.checked) {
+            marked = true;
+          }
+        });
+        
+        if (!marked) {
+          allMarked = false;
+        }
+      });
+      
+      if (!allMarked) {
+        e.preventDefault();
+        alert('Please mark attendance for all students before submitting.');
+      }
+    });
+    
+    // Initial count update
+    updateCounts();
   });
 </script>

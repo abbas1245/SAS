@@ -6,7 +6,7 @@ class ClassStandard < ApplicationRecord
   validates :section, uniqueness: { scope: :year }, allow_nil: true
 
   # Associations
-  has_many :teacher_class_standards
+  has_many :teacher_class_standards, dependent: :destroy
   has_many :teachers, through: :teacher_class_standards, source: :teacher
   has_many :students, -> { where(role: :student) }, class_name: 'User', foreign_key: 'class_standard', primary_key: 'code'
 

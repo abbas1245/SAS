@@ -1,123 +1,125 @@
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="sm:flex sm:items-center">
-    <div class="sm:flex-auto">
-      <h1 class="text-2xl font-semibold text-gray-900">Attendance Reports</h1>
-      <p class="mt-2 text-sm text-gray-700">
-        Generate and view attendance reports for students and teachers.
-      </p>
-    </div>
-    <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-      <%= link_to 'Download CSV', admin_reports_path(format: :csv, start_date: @start_date, end_date: @end_date, student_id: @student_id, teacher_id: @teacher_id), class: "inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto" %>
-    </div>
-  </div>
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-white rounded-lg shadow p-6">
+      <h1 class="text-2xl font-semibold text-gray-900 mb-6">Attendance Reports</h1>
 
-  <div class="mt-8">
-    <%= form_with url: admin_reports_path, method: :get, class: "space-y-8 divide-y divide-gray-200" do |f| %>
-      <div class="space-y-8 divide-y divide-gray-200">
-        <div>
-          <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-            <div class="sm:col-span-2">
-              <%= f.label :start_date, class: "block text-sm font-medium text-gray-700" %>
-              <div class="mt-1">
-                <%= f.date_field :start_date, value: @start_date, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+      <%= form_tag admin_reports_path, method: :get, class: "space-y-6" do %>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <!-- Class Standard Filter -->
+          <div>
+            <%= label_tag :class_standard_id, "Class", class: "block text-sm font-medium text-gray-700" %>
+            <div class="mt-1">
+              <%= select_tag :class_standard_id, 
+                  options_from_collection_for_select(@class_standards, :id, :display_name, @selected_class&.id),
+                  { include_blank: "Select Class", class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" } %>
+            </div>
+          </div>
+
+          <!-- Student Filter -->
+          <div>
+            <%= label_tag :student_id, "Student", class: "block text-sm font-medium text-gray-700" %>
+            <div class="mt-1">
+              <%= select_tag :student_id, 
+                  options_from_collection_for_select(@students, :id, :full_name, params[:student_id]),
+                  { include_blank: "All Students", class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" } %>
+            </div>
+          </div>
+
+          <!-- Teacher Filter -->
+          <div>
+            <%= label_tag :teacher_id, "Teacher", class: "block text-sm font-medium text-gray-700" %>
+            <div class="mt-1">
+              <%= select_tag :teacher_id, 
+                  options_from_collection_for_select(@teachers, :id, :full_name, params[:teacher_id]),
+                  { include_blank: "All Teachers", class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" } %>
+            </div>
+          </div>
+
+          <!-- Date Range -->
+          <div>
+            <%= label_tag :date_range, "Date Range", class: "block text-sm font-medium text-gray-700" %>
+            <div class="mt-1 grid grid-cols-2 gap-2">
+              <%= date_field_tag :start_date, @start_date, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+              <%= date_field_tag :end_date, @end_date, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+          <%= submit_tag "Generate Report", class: "inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+          <%= link_to "Download CSV", admin_reports_path(format: :csv, class_standard_id: @selected_class&.id, student_id: params[:student_id], teacher_id: params[:teacher_id], start_date: @start_date, end_date: @end_date), class: "inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+        </div>
+      <% end %>
+
+      <% if @selected_class %>
+        <!-- Overall Statistics -->
+        <div class="mt-8">
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Overall Statistics</h2>
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-4">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+              <div class="px-4 py-5 sm:p-6">
+                <dt class="text-sm font-medium text-gray-500 truncate">Total Classes</dt>
+                <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= @attendance_stats[:total] %></dd>
               </div>
             </div>
-
-            <div class="sm:col-span-2">
-              <%= f.label :end_date, class: "block text-sm font-medium text-gray-700" %>
-              <div class="mt-1">
-                <%= f.date_field :end_date, value: @end_date, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+              <div class="px-4 py-5 sm:p-6">
+                <dt class="text-sm font-medium text-gray-500 truncate">Present</dt>
+                <dd class="mt-1 text-3xl font-semibold text-green-600"><%= @attendance_stats[:present] %></dd>
               </div>
             </div>
-
-            <div class="sm:col-span-2">
-              <%= f.label :student_id, "Student", class: "block text-sm font-medium text-gray-700" %>
-              <div class="mt-1">
-                <%= f.collection_select :student_id, @students, :id, :email, { include_blank: "All Students" }, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+              <div class="px-4 py-5 sm:p-6">
+                <dt class="text-sm font-medium text-gray-500 truncate">Absent</dt>
+                <dd class="mt-1 text-3xl font-semibold text-red-600"><%= @attendance_stats[:absent] %></dd>
               </div>
             </div>
-
-            <div class="sm:col-span-2">
-              <%= f.label :teacher_id, "Teacher", class: "block text-sm font-medium text-gray-700" %>
-              <div class="mt-1">
-                <%= f.collection_select :teacher_id, @teachers, :id, :email, { include_blank: "All Teachers" }, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
-              </div>
-            </div>
-
-            <div class="sm:col-span-2">
-              <div class="mt-6">
-                <%= f.submit "Generate Report", class: "inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" %>
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+              <div class="px-4 py-5 sm:p-6">
+                <dt class="text-sm font-medium text-gray-500 truncate">Attendance Rate</dt>
+                <dd class="mt-1 text-3xl font-semibold <%= @attendance_stats[:percentage] >= 75 ? 'text-green-600' : 'text-yellow-600' %>">
+                  <%= @attendance_stats[:percentage] %>%
+                </dd>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    <% end %>
-  </div>
 
-  <div class="mt-8">
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Attendance Statistics</h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">Summary of attendance records for the selected period.</p>
-      </div>
-      <div class="border-t border-gray-200">
-        <dl>
-          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Total Records</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"><%= @attendance_stats[:total] %></dd>
-          </div>
-          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Present</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"><%= @attendance_stats[:present] %></dd>
-          </div>
-          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Absent</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"><%= @attendance_stats[:absent] %></dd>
-          </div>
-          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Late</dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"><%= @attendance_stats[:late] %></dd>
-          </div>
-        </dl>
-      </div>
-    </div>
-  </div>
-
-  <div class="mt-8 flex flex-col">
-    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-      <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300">
-            <thead class="bg-gray-50">
-              <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Date</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Student</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Teacher</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 bg-white">
-              <% @attendances.each do |attendance| %>
+        <!-- Student-wise Attendance -->
+        <div class="mt-8">
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Student-wise Attendance</h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                    <%= attendance.date.strftime("%B %d, %Y") %>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <%= attendance.student.email %>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <%= attendance.teacher.email %>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <%= attendance.status_badge %>
-                  </td>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll Number</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Present</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Absent</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Late</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance %</th>
                 </tr>
-              <% end %>
-            </tbody>
-          </table>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <% @student_attendance.each do |student_id, stats| %>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= stats[:name] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= stats[:roll_number] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= stats[:total] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600"><%= stats[:present] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600"><%= stats[:absent] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-600"><%= stats[:late] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm <%= stats[:percentage] >= 75 ? 'text-green-600' : 'text-yellow-600' %>">
+                      <%= stats[:percentage] %>%
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      <% end %>
     </div>
   </div>
 </div> 

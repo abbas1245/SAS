@@ -60,10 +60,9 @@ Rails.application.routes.draw do
           post :mark
         end
       end
-      resources :reports, only: [:index, :show] do
+      resources :reports, only: [:index] do
         collection do
-          get :class_wise
-          get :student_wise
+          get 'class_attendance/:class_standard_id', action: :class_attendance, as: :class_attendance
         end
       end
     end

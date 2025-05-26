@@ -1,34 +1,65 @@
 class Admin::ReportsController < ApplicationController
   before_action :authenticate_user!
-  before_action :authorize_admin
+  before_action :require_admin
 
   def index
-    @start_date = params[:start_date] || Date.today.beginning_of_month
-    @end_date = params[:end_date] || Date.today.end_of_month
-    @student_id = params[:student_id]
-    @teacher_id = params[:teacher_id]
+    @class_standards = ClassStandard.all
+    @selected_class = params[:class_standard_id].present? ? ClassStandard.find(params[:class_standard_id]) : nil
+    @start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : Date.current.beginning_of_month
+    @end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : Date.current.end_of_month
 
-    @attendances = Attendance.includes(:student, :teacher)
-    
-    if @student_id.present?
-      @attendances = @attendances.for_student(@student_id)
+    # Initialize students and teachers for the filter dropdowns
+    @students = User.students.order(:first_name, :last_name)
+    @teachers = User.teachers.order(:first_name, :last_name)
+
+    if @selected_class
+      @attendances = Attendance.where(
+        class_standard: @selected_class.code,
+        date: @start_date..@end_date
+      )
+
+      # Apply student filter if selected
+      if params[:student_id].present?
+        @attendances = @attendances.where(student_id: params[:student_id])
+      end
+
+      # Apply teacher filter if selected
+      if params[:teacher_id].present?
+        @attendances = @attendances.where(teacher_id: params[:teacher_id])
+      end
+
+      @attendance_stats = {
+        total: @attendances.count,
+        present: @attendances.where(status: 'present').count,
+        absent: @attendances.where(status: 'absent').count,
+        late: @attendances.where(status: 'late').count
+      }
+
+      # Calculate attendance percentage
+      @attendance_stats[:percentage] = @attendance_stats[:total] > 0 ? 
+        ((@attendance_stats[:present].to_f / @attendance_stats[:total]) * 100).round(2) : 0
+
+      # Get student-wise attendance
+      @student_attendance = {}
+      @selected_class.students.each do |student|
+        student_attendances = @attendances.where(student_id: student.id)
+        total = student_attendances.count
+        present = student_attendances.where(status: 'present').count
+        absent = student_attendances.where(status: 'absent').count
+        late = student_attendances.where(status: 'late').count
+        percentage = total > 0 ? ((present.to_f / total) * 100).round(2) : 0
+
+        @student_attendance[student.id] = {
+          name: student.full_name,
+          roll_number: student.roll_number,
+          total: total,
+          present: present,
+          absent: absent,
+          late: late,
+          percentage: percentage
+        }
+      end
     end
-
-    if @teacher_id.present?
-      @attendances = @attendances.for_teacher(@teacher_id)
-    end
-
-    @attendances = @attendances.where(date: @start_date..@end_date)
-    
-    @students = User.students
-    @teachers = User.teachers
-
-    @attendance_stats = {
-      total: @attendances.count,
-      present: @attendances.present.count,
-      absent: @attendances.absent.count,
-      late: @attendances.late.count
-    }
 
     respond_to do |format|
       format.html
@@ -38,9 +69,10 @@ class Admin::ReportsController < ApplicationController
 
   private
 
-  def authorize_admin
-    unless current_user.admin?
-      redirect_to root_path, alert: 'You are not authorized to perform this action.'
+  def require_admin
+    unless current_user&.admin?
+      flash[:alert] = "You are not authorized to access this area."
+      redirect_to root_path
     end
   end
 

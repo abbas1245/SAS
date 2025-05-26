@@ -10,6 +10,7 @@ export default class extends Controller {
 
   selectTeacher(event) {
     event.preventDefault()
+    console.log("Selecting teacher form")
     this.roleSelectionTarget.classList.add("hidden")
     this.studentFormTarget.classList.add("hidden")
     this.teacherFormTarget.classList.remove("hidden")
@@ -17,6 +18,7 @@ export default class extends Controller {
 
   selectStudent(event) {
     event.preventDefault()
+    console.log("Selecting student form")
     this.roleSelectionTarget.classList.add("hidden")
     this.teacherFormTarget.classList.add("hidden")
     this.studentFormTarget.classList.remove("hidden")
@@ -24,6 +26,7 @@ export default class extends Controller {
 
   goBack(event) {
     event.preventDefault()
+    console.log("Going back to role selection")
     this.teacherFormTarget.classList.add("hidden")
     this.studentFormTarget.classList.add("hidden")
     this.roleSelectionTarget.classList.remove("hidden")

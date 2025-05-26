@@ -1,0 +1,116 @@
+// PDF Styles
+body {
+  font-family: 'Helvetica', sans-serif;
+  color: #333;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 20px;
+
+  h1 {
+    color: #1a1a1a;
+    font-size: 24px;
+    margin-bottom: 15px;
+  }
+
+  .class-info {
+    font-size: 14px;
+    color: #666;
+
+    p {
+      margin: 5px 0;
+    }
+  }
+}
+
+.class-stats {
+  margin-bottom: 30px;
+
+  h2 {
+    font-size: 18px;
+    color: #1a1a1a;
+    margin-bottom: 15px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+  }
+
+  .stat-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+
+    h3 {
+      font-size: 14px;
+      color: #666;
+      margin: 0 0 10px 0;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #1a1a1a;
+      margin: 0;
+    }
+  }
+}
+
+.attendance-table {
+  margin-bottom: 30px;
+
+  h2 {
+    font-size: 18px;
+    color: #1a1a1a;
+    margin-bottom: 15px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+  }
+}
+
+footer {
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+  margin-top: 30px;
+} 

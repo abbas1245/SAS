@@ -66,6 +66,39 @@
       </div>
     </div>
 
+    <!-- Recent activity -->
+    <div>
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Attendance Activity</h2>
+      <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <ul class="divide-y divide-gray-200">
+          <% if @recent_attendances.present? %>
+            <% @recent_attendances.each do |attendance| %>
+              <li>
+                <div class="px-4 py-4 sm:px-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="text-sm font-medium text-indigo-600"><%= attendance.student.full_name %></div>
+                      <div class="text-sm text-gray-500">
+                        <%= attendance.date.strftime("%B %d, %Y") %> - 
+                        <span class="<%= attendance.status_color %>"><%= attendance.status&.titleize || 'Not Set' %></span>
+                      </div>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      Class: <%= attendance.class_standard %>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            <% end %>
+          <% else %>
+            <li class="px-4 py-6 sm:px-6 text-center text-gray-500">
+              <p>No recent attendance activity.</p>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+
     <!-- Quick actions -->
     <div class="mb-8">
       <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
@@ -137,39 +170,6 @@
           <% else %>
             <li class="px-4 py-6 sm:px-6 text-center text-gray-500">
               <p>No classes assigned to you yet.</p>
-            </li>
-          <% end %>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Recent activity -->
-    <div>
-      <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Attendance Activity</h2>
-      <div class="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul class="divide-y divide-gray-200">
-          <% if @recent_attendances.present? %>
-            <% @recent_attendances.each do |attendance| %>
-              <li>
-                <div class="px-4 py-4 sm:px-6">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <div class="text-sm font-medium text-indigo-600"><%= attendance.student.full_name %></div>
-                      <div class="text-sm text-gray-500">
-                        <%= attendance.date.strftime("%B %d, %Y") %> - 
-                        <span class="<%= attendance.status_color %>"><%= attendance.status&.titleize || 'Not Set' %></span>
-                      </div>
-                    </div>
-                    <div class="text-sm text-gray-500">
-                      Class: <%= attendance.class_standard %>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            <% end %>
-          <% else %>
-            <li class="px-4 py-6 sm:px-6 text-center text-gray-500">
-              <p>No recent attendance activity.</p>
             </li>
           <% end %>
         </ul>

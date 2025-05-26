@@ -1,7 +1,9 @@
 class Teacher::AttendanceController < ApplicationController
   before_action :authenticate_user!
   before_action :require_teacher
-  before_action :set_class_standard, only: [:students, :mark]
+  before_action :set_class_standards
+  before_action :set_class_standard, only: [:mark]
+  before_action :set_today_attendance, only: [:index]
 
   def index
     @class_standards = current_user.teaching_class_standards
@@ -51,15 +53,7 @@ class Teacher::AttendanceController < ApplicationController
 
   def students
     begin
-      Rails.logger.debug "Finding students for class_standard_id: #{params[:class_standard_id]}"
       @students = @class_standard.students.order(:first_name, :last_name)
-      
-      if @students.empty?
-        Rails.logger.debug "No students found for class standard #{@class_standard.display_name}"
-      else
-        Rails.logger.debug "Found #{@students.count} students for class standard #{@class_standard.display_name}"
-      end
-      
       result = @students.map { |s| 
         attendance = s.attendances.where(date: Date.current).first
         { 
@@ -69,26 +63,39 @@ class Teacher::AttendanceController < ApplicationController
           attendance: attendance&.status 
         } 
       }
-      
-      Rails.logger.debug "Returning JSON with #{result.length} students"
       render json: result
     rescue => e
-      Rails.logger.error "Error fetching students: #{e.message}"
       render json: { error: "Error loading students: #{e.message}" }, status: :unprocessable_entity
     end
   end
 
   def mark
+    Rails.logger.info "Starting attendance marking process for class: #{@class_standard.code}"
+    Rails.logger.info "Attendance params: #{params[:attendance].inspect}"
+
     ActiveRecord::Base.transaction do
       params[:attendance].each do |student_id, status|
+        # Skip if status is not set
+        next if status.blank?
+        
+        Rails.logger.info "Processing attendance for student #{student_id} with status: #{status}"
+        
+        # Find or initialize attendance record
         attendance = Attendance.find_or_initialize_by(
           student_id: student_id,
           teacher_id: current_user.id,
           date: Date.current,
           class_standard: @class_standard.code
         )
-        attendance.status = status
-        attendance.save!
+        
+        # Set the status and save
+        attendance.status = status.to_s.downcase.strip # Ensure status is a string, lowercase, and trimmed
+        if attendance.save
+          Rails.logger.info "Successfully saved attendance for student #{student_id}: #{attendance.inspect}"
+        else
+          Rails.logger.error "Failed to save attendance for student #{student_id}: #{attendance.errors.full_messages.join(', ')}"
+          raise ActiveRecord::RecordInvalid.new(attendance)
+        end
       end
     end
 
@@ -100,6 +107,7 @@ class Teacher::AttendanceController < ApplicationController
       format.json { render json: { message: 'Attendance marked successfully' } }
     end
   rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error "Error marking attendance: #{e.message}"
     respond_to do |format|
       format.html { 
         flash[:alert] = "Error: #{e.message}"
@@ -111,10 +119,28 @@ class Teacher::AttendanceController < ApplicationController
 
   private
 
+  def set_class_standards
+    @class_standards = current_user.teaching_class_standards
+  end
+
   def set_class_standard
-    @class_standard = current_user.teaching_class_standards.find(params[:class_standard_id])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Class not found' }, status: :not_found
+    if params[:class_standard_id].present?
+      @class_standard = @class_standards.find(params[:class_standard_id])
+    else
+      flash[:alert] = "Please select a class first."
+      redirect_to teacher_attendance_index_path
+    end
+  end
+
+  def set_today_attendance
+    return unless @selected_class
+
+    @today_attendance = Attendance.where(
+      student_id: @selected_class.students.pluck(:id),
+      teacher_id: current_user.id,
+      date: Date.current,
+      class_standard: @selected_class.code
+    ).index_by(&:student_id)
   end
 
   def require_teacher

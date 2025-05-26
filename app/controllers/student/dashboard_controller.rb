@@ -4,49 +4,118 @@ class Student::DashboardController < ApplicationController
 
   def index
     @student = current_user
+    
+    # Get enrolled subjects through class standard
+    @enrolled_subjects = if @student.class_standard
+      [@student.class_standard]
+    else
+      []
+    end
+    
+    # Get recent attendance records with detailed logging
     @recent_attendances = @student.attendances
                                 .includes(:teacher)
-                                .order(created_at: :desc)
+                                .order(date: :desc)
                                 .limit(5)
-    @attendance_stats = calculate_attendance_stats
     
-    # Group attendances by class/subject
-    @attendance_by_subject = @student.attendances
-                                    .select('class_standard, COUNT(*) as total_count, SUM(CASE WHEN status = \'present\' THEN 1 ELSE 0 END) as present_count')
-                                    .group(:class_standard)
-                                    .each_with_object({}) do |data, hash|
-                                      percentage = (data.present_count.to_f / data.total_count * 100).round(2)
-                                      class_obj = ClassStandard.find_by(code: data.class_standard)
-                                      class_name = class_obj ? class_obj.display_name : data.class_standard
-                                      hash[data.class_standard] = {
-                                        name: class_name,
-                                        total: data.total_count,
-                                        present: data.present_count,
-                                        percentage: percentage,
-                                        status: percentage >= 75 ? 'good' : 'warning'
-                                      }
-                                    end
+    # Debug logging for recent attendances
+    Rails.logger.debug "=== Recent Attendance Records ==="
+    @recent_attendances.each do |attendance|
+      Rails.logger.debug "Record ID: #{attendance.id}"
+      Rails.logger.debug "Date: #{attendance.date}"
+      Rails.logger.debug "Class: #{attendance.class_standard}"
+      Rails.logger.debug "Status (raw): #{attendance.status.inspect}"
+      Rails.logger.debug "Status (type): #{attendance.status.class}"
+      Rails.logger.debug "Teacher: #{attendance.teacher&.full_name}"
+      Rails.logger.debug "---"
+    end
+    
+    # Calculate attendance statistics for each subject
+    @attendance_stats = {}
+    @enrolled_subjects.each do |subject|
+      # Get all attendance records for this subject
+      subject_attendances = @student.attendances.where(class_standard: subject.code)
+      
+      # Calculate statistics
+      total = subject_attendances.count
+      present = subject_attendances.where(status: 'present').count
+      absent = subject_attendances.where(status: 'absent').count
+      late = subject_attendances.where(status: 'late').count
+      
+      # Calculate percentage
+      percentage = total > 0 ? (present.to_f / total * 100).round(2) : 0
+      
+      # Debug logging
+      Rails.logger.debug "=== Subject Statistics: #{subject.code} ==="
+      Rails.logger.debug "Total records: #{total}"
+      Rails.logger.debug "Present: #{present}"
+      Rails.logger.debug "Absent: #{absent}"
+      Rails.logger.debug "Late: #{late}"
+      Rails.logger.debug "Percentage: #{percentage}"
+      
+      # Log individual records for this subject
+      subject_attendances.each do |attendance|
+        Rails.logger.debug "Record ID: #{attendance.id}"
+        Rails.logger.debug "Date: #{attendance.date}"
+        Rails.logger.debug "Status: #{attendance.status.inspect}"
+        Rails.logger.debug "---"
+      end
+      
+      @attendance_stats[subject.code] = {
+        name: subject.display_name,
+        total: total,
+        present: present,
+        absent: absent,
+        late: late,
+        percentage: percentage,
+        status: percentage >= 75 ? 'good' : 'warning'
+      }
+    end
+    
+    # Calculate overall attendance statistics
+    @overall_stats = calculate_attendance_stats(@student.attendances)
   end
 
   private
+
+  def calculate_attendance_stats(attendances)
+    total = attendances.count
+    present = attendances.where(status: 'present').count
+    absent = attendances.where(status: 'absent').count
+    late = attendances.where(status: 'late').count
+    
+    # Debug logging
+    Rails.logger.debug "=== Overall Statistics ==="
+    Rails.logger.debug "Total records: #{total}"
+    Rails.logger.debug "Present: #{present}"
+    Rails.logger.debug "Absent: #{absent}"
+    Rails.logger.debug "Late: #{late}"
+    
+    # Log all attendance records
+    attendances.each do |attendance|
+      Rails.logger.debug "Record ID: #{attendance.id}"
+      Rails.logger.debug "Date: #{attendance.date}"
+      Rails.logger.debug "Class: #{attendance.class_standard}"
+      Rails.logger.debug "Status: #{attendance.status.inspect}"
+      Rails.logger.debug "---"
+    end
+    
+    percentage = total > 0 ? (present.to_f / total * 100).round(2) : 0
+    
+    {
+      total: total,
+      present: present,
+      absent: absent,
+      late: late,
+      percentage: percentage,
+      status: percentage >= 75 ? 'good' : 'warning'
+    }
+  end
 
   def require_student
     unless current_user&.student?
       flash[:alert] = "You are not authorized to access this area."
       redirect_to root_path
     end
-  end
-
-  def calculate_attendance_stats
-    total_classes = @student.attendances.count
-    present_classes = @student.attendances.present.count
-    attendance_percentage = total_classes.positive? ? (present_classes.to_f / total_classes * 100).round(2) : 0
-    
-    {
-      total_classes: total_classes,
-      present_classes: present_classes,
-      attendance_percentage: attendance_percentage,
-      short_attendance: @student.short_attendance?
-    }
   end
 end 

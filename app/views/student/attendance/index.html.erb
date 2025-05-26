@@ -44,7 +44,7 @@
             
             <div class="px-4 py-5 sm:p-6">
               <h4 class="text-sm font-medium text-gray-500 mb-3">Recent Records</h4>
-              <% if data[:records].any? %>
+              <% if data[:records].present? %>
                 <div class="space-y-3">
                   <% data[:records].each do |record| %>
                     <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-md">
@@ -52,10 +52,17 @@
                         <div class="flex items-center">
                           <span class="text-sm font-medium text-gray-900"><%= record.date.strftime("%b %d, %Y") %></span>
                           <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                            <%= record.status == 'present' ? 'bg-green-100 text-green-800' : 
-                                record.status == 'absent' ? 'bg-red-100 text-red-800' : 
-                                record.status == 'late' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800' %>">
-                            <%= record.status&.titleize || 'Not Set' %>
+                            <%= case record.status
+                                when 'present'
+                                  'bg-green-100 text-green-800'
+                                when 'absent'
+                                  'bg-red-100 text-red-800'
+                                when 'late'
+                                  'bg-yellow-100 text-yellow-800'
+                                else
+                                  'bg-gray-100 text-gray-800'
+                                end %>">
+                            <%= record.status.present? ? record.status.titleize : 'Not Set' %>
                           </span>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">
@@ -63,15 +70,16 @@
                         </p>
                       </div>
                       <div class="flex-shrink-0">
-                        <% if record.status == 'present' %>
+                        <% case record.status %>
+                        <% when 'present' %>
                           <svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                           </svg>
-                        <% elsif record.status == 'absent' %>
+                        <% when 'absent' %>
                           <svg class="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                           </svg>
-                        <% elsif record.status == 'late' %>
+                        <% when 'late' %>
                           <svg class="h-5 w-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -85,7 +93,7 @@
                   <% end %>
                 </div>
               <% else %>
-                <p class="text-sm text-gray-500 text-center py-4">No recent records found.</p>
+                <p class="text-sm text-gray-500 text-center py-4">No recent records found for this subject.</p>
               <% end %>
             </div>
           </div>
@@ -106,75 +114,81 @@
   <div class="mt-10">
     <h2 class="text-lg font-medium text-gray-900 mb-4">Attendance by Month</h2>
     <% if @attendances_by_month.any? %>
-      <% @attendances_by_month.each do |month, month_attendances| %>
-        <div class="mb-8 bg-white shadow overflow-hidden sm:rounded-lg">
-          <div class="px-4 py-5 sm:px-6 flex justify-between items-center border-b border-gray-200">
-            <div>
-              <h3 class="text-lg leading-6 font-medium text-gray-900">
-                <%= month.strftime("%B %Y") %>
-              </h3>
-              <p class="mt-1 max-w-2xl text-sm text-gray-500">
-                <%= month_attendances.count %> attendance records
-              </p>
-            </div>
-            
-            <div class="flex space-x-2">
-              <% present = month_attendances.count { |a| a.status == 'present' } %>
-              <% absent = month_attendances.count { |a| a.status == 'absent' } %>
-              <% late = month_attendances.count { |a| a.status == 'late' } %>
-              <% percentage = month_attendances.count > 0 ? ((present.to_f / month_attendances.count) * 100).round(2) : 0 %>
-              
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Present: <%= present %>
-              </span>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                Absent: <%= absent %>
-              </span>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                Late: <%= late %>
-              </span>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= percentage >= 75 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
-                <%= percentage %>%
-              </span>
-            </div>
+      <% @attendances_by_month.each do |month, attendances| %>
+        <div class="bg-white shadow rounded-lg mb-6">
+          <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+              <%= month.strftime("%B %Y") %>
+            </h3>
+            <p class="mt-1 text-sm text-gray-500">
+              <%= attendances.count %> attendance records
+            </p>
           </div>
-          
-          <div class="border-t border-gray-200">
-            <div class="overflow-hidden">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject/Class</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teacher</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <% month_attendances.each do |attendance| %>
+          <div class="px-4 py-5 sm:p-6">
+            <div class="grid grid-cols-4 gap-4 mb-6">
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900"><%= attendances.count { |a| a.status == 'present' } %></div>
+                <div class="text-xs text-gray-500">Present</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900"><%= attendances.count { |a| a.status == 'absent' } %></div>
+                <div class="text-xs text-gray-500">Absent</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900"><%= attendances.count { |a| a.status == 'late' } %></div>
+                <div class="text-xs text-gray-500">Late</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">
+                  <%= attendances.any? ? ((attendances.count { |a| a.status == 'present' }.to_f / attendances.count) * 100).round(2) : 0 %>%
+                </div>
+                <div class="text-xs text-gray-500">Attendance Rate</div>
+              </div>
+            </div>
+            <div class="border-t border-gray-200">
+              <div class="overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
                     <tr>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        <%= attendance.date.strftime("%A, %B %d") %>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <% class_obj = ClassStandard.find_by(code: attendance.class_standard) %>
-                        <%= class_obj ? class_obj.display_name : attendance.class_standard %>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                          <%= attendance.status == 'present' ? 'bg-green-100 text-green-800' : 
-                              attendance.status == 'absent' ? 'bg-red-100 text-red-800' : 
-                              attendance.status == 'late' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800' %>">
-                          <%= attendance.status&.titleize || 'Not Set' %>
-                        </span>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <%= attendance.teacher&.full_name || 'Unknown' %>
-                      </td>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject/Class</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teacher</th>
                     </tr>
-                  <% end %>
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <% attendances.each do |attendance| %>
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <%= attendance.date.strftime("%A, %B %d") %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <% class_obj = ClassStandard.find_by(code: attendance.class_standard) %>
+                          <%= class_obj ? class_obj.display_name : attendance.class_standard %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            <%= case attendance.status
+                                when 'present'
+                                  'bg-green-100 text-green-800'
+                                when 'absent'
+                                  'bg-red-100 text-red-800'
+                                when 'late'
+                                  'bg-yellow-100 text-yellow-800'
+                                else
+                                  'bg-gray-100 text-gray-800'
+                                end %>">
+                            <%= attendance.status&.titleize || 'Not Set' %>
+                          </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <%= attendance.teacher.full_name %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -182,10 +196,10 @@
     <% else %>
       <div class="bg-white shadow rounded-lg p-6 text-center">
         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
         </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">No attendance records</h3>
-        <p class="mt-1 text-sm text-gray-500">You don't have any attendance records yet.</p>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No attendance records found</h3>
+        <p class="mt-1 text-sm text-gray-500">You don't have any attendance records for this period.</p>
       </div>
     <% end %>
   </div>

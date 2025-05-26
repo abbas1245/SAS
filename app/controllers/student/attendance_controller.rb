@@ -4,28 +4,77 @@ class Student::AttendanceController < ApplicationController
   
   def index
     @student = current_user
-    @attendances = @student.attendances.includes(:teacher)
-                          .order(date: :desc)
+    
+    # Base query with includes to avoid N+1 queries
+    base_query = @student.attendances.includes(:teacher)
+    
+    # If a specific subject is selected, filter attendances
+    if params[:subject].present?
+      @attendances = base_query.where(class_standard: params[:subject])
+    else
+      @attendances = base_query
+    end
+    
+    # Order all attendances by date
+    @attendances = @attendances.order(date: :desc)
+    
+    # Debug logging for attendance records
+    Rails.logger.debug "Found #{@attendances.count} attendance records"
+    @attendances.each do |attendance|
+      Rails.logger.debug "Attendance record: date=#{attendance.date}, status=#{attendance.status.inspect}, class=#{attendance.class_standard}"
+    end
     
     # Group attendances by month
     @attendances_by_month = @attendances.group_by { |a| a.date.beginning_of_month }
     
-    # Group by subject/class
+    # Group by subject/class with proper counting and recent records
     @attendance_by_subject = {}
-    @attendances.group_by(&:class_standard).each do |code, records|
+    
+    # Get all unique class standards from attendances
+    class_standards = @student.attendances.distinct.pluck(:class_standard)
+    
+    class_standards.each do |code|
+      # Get all attendances for this subject with status
+      subject_attendances = @student.attendances.where(class_standard: code)
+      
+      # Calculate statistics
+      total = subject_attendances.count
+      present = subject_attendances.where(status: 'present').count
+      absent = subject_attendances.where(status: 'absent').count
+      late = subject_attendances.where(status: 'late').count
+      
+      # Calculate percentage
+      percentage = total > 0 ? (present.to_f / total * 100).round(2) : 0
+      
+      # Get subject name
       class_obj = ClassStandard.find_by(code: code)
       subject_name = class_obj ? class_obj.display_name : code
-      total = records.count
-      present = records.count { |r| r.status == 'present' }
-      percentage = total > 0 ? ((present.to_f / total) * 100).round(2) : 0
+      
+      # Get recent records (last 5) with status
+      recent_records = subject_attendances.includes(:teacher)
+                                        .order(date: :desc)
+                                        .limit(5)
+                                        .to_a # Ensure records are loaded
+      
+      # Debug logging
+      Rails.logger.debug "Subject: #{code}"
+      Rails.logger.debug "Total records: #{total}"
+      Rails.logger.debug "Present: #{present}"
+      Rails.logger.debug "Absent: #{absent}"
+      Rails.logger.debug "Late: #{late}"
+      recent_records.each do |record|
+        Rails.logger.debug "Record date: #{record.date}, Status: #{record.status.inspect}"
+      end
       
       @attendance_by_subject[code] = {
         name: subject_name,
         total: total,
         present: present,
+        absent: absent,
+        late: late,
         percentage: percentage,
         status: percentage >= 75 ? 'good' : 'warning',
-        records: records.first(5)  # Include the 5 most recent records for each subject
+        records: recent_records
       }
     end
   end
@@ -35,7 +84,7 @@ class Student::AttendanceController < ApplicationController
     @attendances = @student.attendances.includes(:teacher)
                           .order(date: :desc)
     
-    # Calculate statistics
+    # Calculate statistics with proper counting
     @total_classes = @attendances.count
     @present_classes = @attendances.where(status: 'present').count
     @absent_classes = @attendances.where(status: 'absent').count
@@ -43,36 +92,57 @@ class Student::AttendanceController < ApplicationController
     
     @attendance_percentage = @total_classes > 0 ? ((@present_classes.to_f / @total_classes) * 100).round(2) : 0
     
-    # Group attendances by subject/class
+    # Group attendances by subject/class with proper counting
     @attendance_by_subject = {}
-    @attendances.group_by(&:class_standard).each do |code, records|
+    
+    # Get all unique class standards from attendances
+    class_standards = @student.attendances.distinct.pluck(:class_standard)
+    
+    class_standards.each do |code|
+      # Get all attendances for this subject
+      subject_attendances = @student.attendances.where(class_standard: code)
+      
+      # Calculate statistics
+      total = subject_attendances.count
+      present = subject_attendances.where(status: 'present').count
+      absent = subject_attendances.where(status: 'absent').count
+      late = subject_attendances.where(status: 'late').count
+      
+      # Calculate percentage
+      percentage = total > 0 ? (present.to_f / total * 100).round(2) : 0
+      
+      # Get subject name
       class_obj = ClassStandard.find_by(code: code)
       subject_name = class_obj ? class_obj.display_name : code
-      total = records.count
-      present = records.count { |r| r.status == 'present' }
-      percentage = total > 0 ? ((present.to_f / total) * 100).round(2) : 0
       
       @attendance_by_subject[code] = {
         name: subject_name,
         total: total,
         present: present,
+        absent: absent,
+        late: late,
         percentage: percentage,
         status: percentage >= 75 ? 'good' : 'warning'
       }
     end
     
-    # Monthly attendance trend
+    # Monthly attendance trend with proper counting
     @monthly_trend = @attendances.group_by { |a| a.date.beginning_of_month }
                                 .transform_values do |records|
-                                  total = records.count
-                                  present = records.count { |r| r.status == 'present' }
-                                  percentage = total > 0 ? ((present.to_f / total) * 100).round(2) : 0
-                                  {
-                                    total: total,
-                                    present: present,
-                                    percentage: percentage
-                                  }
-                                end
+      total = records.count
+      present = records.count { |r| r.status == 'present' }
+      absent = records.count { |r| r.status == 'absent' }
+      late = records.count { |r| r.status == 'late' }
+      percentage = total > 0 ? ((present.to_f / total) * 100).round(2) : 0
+      
+      {
+        total: total,
+        present: present,
+        absent: absent,
+        late: late,
+        percentage: percentage
+      }
+    end
     
     respond_to do |format|
       format.html

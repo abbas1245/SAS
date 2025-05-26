@@ -54,17 +54,8 @@ class User < ApplicationRecord
     elsif value.is_a?(ClassStandard)
       # If it's a ClassStandard object, set the code
       write_attribute(:class_standard, value.code)
-    elsif value.is_a?(Integer) || value.is_a?(ActiveRecord::Base)
-      # If it's an ID or some other object, try to look up the class standard
-      cs = ClassStandard.find_by(id: value)
-      if cs
-        write_attribute(:class_standard, cs.code)
-      else
-        Rails.logger.error "Unable to find ClassStandard with ID #{value}"
-        write_attribute(:class_standard, value.to_s)
-      end
     else
-      # Default fallback
+      # Default fallback - convert to string
       write_attribute(:class_standard, value.to_s) if value
     end
   end
@@ -156,6 +147,8 @@ class User < ApplicationRecord
   
   # Method to handle role changes
   def handle_role_change
+    Rails.logger.info "Handling role change from #{role_was} to #{role}"
+    
     # If changing from non-student to student
     if will_save_change_to_role? && student? && !role_was.nil? && role_was != 'student'
       # Set default roll number if not present
@@ -166,6 +159,11 @@ class User < ApplicationRecord
     if will_save_change_to_role? && !student? && role_was == 'student'
       # Generate an email if changing from student to another role and email is blank
       self.email ||= generate_default_email
+    end
+
+    # Log teacher role changes
+    if will_save_change_to_role? && teacher?
+      Rails.logger.info "Setting up new teacher: #{inspect}"
     end
   end
 
